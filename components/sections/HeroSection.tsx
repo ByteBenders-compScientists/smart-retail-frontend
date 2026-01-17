@@ -131,7 +131,7 @@ export default function HeroSection() {
               transition={{ type: 'spring', stiffness: 200 }}
             >
               <Image
-                src="/images/drinks/hero-image.png"
+                src="/images/drink.jpg"
                 alt="Soft drinks display"
                 width={600}
                 height={600}
