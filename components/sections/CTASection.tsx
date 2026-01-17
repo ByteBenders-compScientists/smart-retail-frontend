@@ -5,42 +5,47 @@ import { ArrowRight } from 'lucide-react';
 
 export default function CTASection() {
   return (
-    <section id="contact" className="bg-blue-600 py-20">
+    <section id="contact" className="bg-blue-600/30  py-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to Start Shopping?
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-5xl md:text-6xl font-bold text-white mb-8 leading-tight">
+            Start Shopping with Drinx Retailers Today
           </h2>
-          <p className="text-lg md:text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of customers enjoying convenient shopping across all our branches. Register now and get started in minutes.
+          <p className="text-xl md:text-2xl text-blue-100 mb-12 leading-relaxed">
+            Join our growing community of satisfied customers. Shop from any of our 5 branches across Kenya and enjoy the same great prices everywhere.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link 
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
+            <Link
               href="/auth/register"
-              className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-md hover:bg-gray-100 transition-colors"
+              className="group inline-flex items-center justify-center px-10 py-5 bg-white text-blue-600 font-bold text-lg hover:bg-gray-100 transition-all duration-300 shadow-xl"
             >
-              Create Account
-              <ArrowRight className="ml-2 h-5 w-5" />
+              Create Your Account
+              <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
             </Link>
-            <Link 
+            
+            <Link
               href="/auth/login"
-              className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white font-semibold rounded-md hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center justify-center px-10 py-5 border-2 border-white text-white font-bold text-lg hover:bg-blue-700 transition-all duration-300"
             >
-              Already have an account? Login
+              Sign In to Your Account
             </Link>
           </div>
 
-          {/* Contact Info */}
-          <div className="mt-12 pt-12 border-t border-blue-500">
-            <p className="text-blue-100 mb-4">Have questions? We're here to help!</p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center text-white">
-              <a href="tel:+254700000000" className="hover:text-blue-100 transition-colors">
-                📞 +254 700 000 000
-              </a>
-              <a href="mailto:info@smartretail.co.ke" className="hover:text-blue-100 transition-colors">
-                ✉️ info@smartretail.co.ke
-              </a>
+          {/* Stats Bar */}
+          <div className="grid grid-cols-3 gap-8 pt-12 border-t border-blue-500">
+            <div>
+              <div className="text-5xl font-bold text-white mb-2">5</div>
+              <div className="text-blue-100 font-medium">Branches Nationwide</div>
+            </div>
+            <div>
+              <div className="text-5xl font-bold text-white mb-2">24/7</div>
+              <div className="text-blue-100 font-medium">Online Shopping</div>
+            </div>
+            <div>
+              <div className="text-5xl font-bold text-white mb-2">100%</div>
+              <div className="text-blue-100 font-medium">Price Consistency</div>
             </div>
           </div>
         </div>
