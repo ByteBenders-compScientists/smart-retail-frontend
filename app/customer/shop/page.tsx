@@ -733,7 +733,7 @@ export default function ShopPage() {
                   <div className="flex flex-wrap gap-2">
                     {searchQuery && (
                       <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 text-sm font-medium rounded-full">
-                        Search: "{searchQuery}"
+                        Search: &quot;{searchQuery}&quot;
                         <button onClick={() => setSearchQuery('')} className="hover:text-blue-900">
                           <X className="h-3 w-3" />
                         </button>
@@ -899,7 +899,7 @@ export default function ShopPage() {
                 {filteredProducts.length} Products
                 {searchQuery && (
                   <span className="text-slate-600 font-normal ml-2">
-                    matching "{searchQuery}"
+                    matching &quot;{searchQuery}&quot;
                   </span>
                 )}
               </h2>
