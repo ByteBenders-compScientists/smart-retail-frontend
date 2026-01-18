@@ -1,10 +1,10 @@
-# Smart-Retail - Distributed Supermarket Management System
+# drinx retailers - Distributed Supermarket Management System
 
 A modern, distributed web application for managing a supermarket chain with headquarters in Nairobi and branches in Kisumu, Mombasa, Nakuru, and Eldoret.
 
 ## Project Overview
 
-Smart-Retail is a Next.js-based frontend application that enables customers to purchase soft drinks (Coke, Fanta, Sprite) from any branch and allows admins to manage inventory and view comprehensive sales reports across all locations.
+drinx retailers is a Next.js-based frontend application that enables customers to purchase soft drinks (Coke, Fanta, Sprite) from any branch and allows admins to manage inventory and view comprehensive sales reports across all locations.
 
 ## Tech Stack
 
@@ -24,7 +24,7 @@ A businessman owns a supermarket chain with **1 headquarters (Nairobi)** and **4
 - Manage inventory restocking from headquarters
 - View consolidated sales reports
 
-### The Solution: Smart-Retail Distributed Web Application
+### The Solution: drinx retailers Distributed Web Application
 A web-based system that connects all 5 locations, allowing real-time purchasing and centralized management.
 
 ---
@@ -309,7 +309,7 @@ SALE RECORDED: Nairobi HQ
 ## Project Structure
 
 ```
-smart-retail/
+drinx retailers/
 ├── src/
 │   ├── app/                          # Next.js App Router pages
 │   │   ├── layout.tsx                # Root layout
@@ -450,7 +450,7 @@ NEXT_PUBLIC_MPESA_CONSUMER_SECRET=your_consumer_secret
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd smart-retail
+   cd drinx retailers
    ```
 
 2. **Install dependencies**
