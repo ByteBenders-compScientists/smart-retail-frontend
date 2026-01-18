@@ -46,7 +46,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
   };
 
   return (
-    <div className="group bg-white shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full">
+    <div className="group bg-white shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full">
       {/* Product Image Section - MADE BIGGER */}
       <div className="relative h-80 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
         {/* Stock Badge */}
@@ -188,8 +188,8 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
             product.stock === 0
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : isAdding
-              ? 'bg-green-600 text-white'
-              : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'
+              ? 'bg-emerald-600 text-white'
+              : 'bg-sky-600 text-white hover:bg-sky-700 active:scale-95'
           }`}
         >
           {isAdding ? (

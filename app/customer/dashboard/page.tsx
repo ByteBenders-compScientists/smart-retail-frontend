@@ -343,57 +343,70 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {/* Welcome Header with Branch Selector */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 lg:p-10 mb-8 text-white shadow-xl rounded-xl">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
-              <div>
-                <h1 className="text-3xl lg:text-4xl font-bold mb-3">
-                  Welcome back, John! 👋
-                </h1>
-                <p className="text-blue-100 text-lg">
-                  Shop singles, litres, or crates from any of our 5 branches.
-                </p>
-              </div>
-              
-              {/* Branch Selector */}
-              <div className="bg-white/10 backdrop-blur-md p-4 border border-white/20 min-w-[280px] rounded-xl">
-                <div className="flex items-center gap-2 mb-3 ">
-                  <MapPin className="h-5 w-5 text-blue-200" />
-                  <span className="text-sm font-medium text-blue-100">Shopping Location</span>
+          {/* Welcome Header with Background Image */}
+          <div className="relative p-6 lg:p-10 mb-8 text-white shadow-xl rounded-xl overflow-hidden">
+            {/* Background Image */}
+            <div 
+              className="absolute inset-0 bg-cover bg-center"
+              style={{
+                backgroundImage: 'url(https://i.pinimg.com/1200x/65/86/a9/6586a930db1e4efed4ac1bdb6a9a09eb.jpg)'
+              }}
+            />
+            {/* Emerald Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-800/70 to-slate-900/95" />
+            
+            {/* Content */}
+            <div className="relative z-10">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold mb-3">
+                    Welcome back, John! 👋
+                  </h1>
+                  <p className="text-white text-lg">
+                    Shop singles, litres, or crates from any of our 5 branches.
+                  </p>
                 </div>
-                <select
-                  value={selectedBranch}
-                  onChange={(e) => setSelectedBranch(e.target.value)}
-                  className="w-full px-4 py-3 bg-white text-gray-900 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-                >
-                  {branches.map((branch) => (
-                    <option key={branch.id} value={branch.id}>
-                      {branch.name}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-blue-200 mt-2">
-                  Currently showing products from {currentBranch.name}
-                </p>
+                
+                {/* Branch Selector */}
+                <div className="bg-white/10 backdrop-blur-md p-4 border border-white/20 min-w-[280px] rounded-xl">
+                  <div className="flex items-center gap-2 mb-3 ">
+                    <MapPin className="h-5 w-5 text-white" />
+                    <span className="text-sm font-medium text-white">Shopping Location</span>
+                  </div>
+                  <select
+                    value={selectedBranch}
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    className="w-full px-4 py-3 bg-white text-gray-900 font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer"
+                  >
+                    {branches.map((branch) => (
+                      <option key={branch.id} value={branch.id}>
+                        {branch.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-white mt-2">
+                    Currently showing products from {currentBranch.name}
+                  </p>
+                </div>
               </div>
-            </div>
 
-            {/* Search Bar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search drinks (Coke, Fanta, Sprite)..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-xl pl-12 pr-4 py-3.5 bg-white/95 backdrop-blur-sm border-2 border-blue-600/30 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-white transition-all"
-                />
+              {/* Search Bar */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search drinks (Coke, Fanta, Sprite)..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full rounded-xl pl-12 pr-4 py-3.5 bg-white/95 backdrop-blur-sm border-2 border-sky-600/30 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-white transition-all"
+                  />
+                </div>
+                <button className="flex rounded-xl items-center justify-center px-6 py-3.5 bg-white text-sky-600 font-semibold hover:bg-emerald-50 transition-colors shadow-lg whitespace-nowrap">
+                  <ShoppingCart className="h-5 w-5 mr-2" />
+                  View Cart (3)
+                </button>
               </div>
-              <button className="flex rounded-xl items-center justify-center px-6 py-3.5 bg-white text-blue-600 font-semibold hover:bg-blue-50 transition-colors shadow-lg whitespace-nowrap">
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                View Cart (3)
-              </button>
             </div>
           </div>
 
@@ -414,7 +427,7 @@ export default function DashboardPage() {
                     onClick={() => setActiveCategory(category.id)}
                     className={`flex rounded-md items-center px-5 py-3.5 whitespace-nowrap transition-all shadow-sm ${
                       activeCategory === category.id
-                        ? 'bg-blue-600 text-white shadow-lg scale-105'
+                        ? 'bg-sky-600 text-white shadow-lg scale-105'
                         : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md border border-gray-200'
                     }`}
                   >
@@ -446,7 +459,7 @@ export default function DashboardPage() {
               <select
                 value={filters.sortBy}
                 onChange={(e) => setFilters({...filters, sortBy: e.target.value})}
-                className="px-4 py-2 border border-gray-300 bg-white text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                className="px-4 py-2 border border-gray-300 bg-white text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
               >
                 <option value="popular">Most Popular</option>
                 <option value="price-low">Price: Low to High</option>
@@ -488,7 +501,7 @@ export default function DashboardPage() {
                     branch: 'all'
                   });
                 }}
-                className="px-8 py-3 bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors shadow-lg"
+                className="px-8 py-3 bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors shadow-lg"
               >
                 Clear All Filters
               </button>
@@ -501,8 +514,8 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white p-8 border border-gray-200 hover:shadow-xl transition-shadow">
                 <div className="flex items-start mb-4">
-                  <div className="h-12 w-12 bg-blue-100 flex items-center justify-center mr-4 flex-shrink-0">
-                    <ShoppingCart className="h-6 w-6 text-blue-600" />
+                  <div className="h-12 w-12 bg-emerald-100 flex items-center justify-center mr-4 flex-shrink-0">
+                    <ShoppingCart className="h-6 w-6 text-emerald-600" />
                   </div>
                   <h3 className="font-bold text-gray-900 text-lg">Same Price Everywhere</h3>
                 </div>
