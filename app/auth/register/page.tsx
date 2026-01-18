@@ -22,20 +22,20 @@ export default function RegisterPage() {
   // Rotating images and messages
 const slides = [
   {
-    image: '/images/drinks4.jpg',
-    gradient: 'from-blue-600/30 via-blue-700/50 to-blue-900/80',
+    image: '/images/drinks7.jpg',
+    gradient: 'from-slate-600/30 via-slate-700/50 to-slate-900/80',
     title: 'Join Drinx Retailers',
     subtitle: 'Start shopping from 5 branches across Kenya',
   },
   {
-    image: '/images/drinks2.jpg',
-    gradient: 'from-blue-600/30 via-blue-700/50 to-blue-900/80',
+    image: '/images/drinks5.jpg',
+    gradient: 'from-slate-600/30 via-slate-700/50 to-slate-900/80',
     title: 'Best Prices Guaranteed',
     subtitle: 'Same quality, same price at every location',
   },
   {
-    image: '/images/drinks3.jpg',
-    gradient: 'from-blue-600/30 via-blue-700/50 to-blue-900/80',
+    image: '/images/drinks6.jpg',
+    gradient: 'from-slate-600/30 via-slate-700/50 to-slate-900/80',
     title: 'Fast & Secure Payments',
     subtitle: 'Checkout in seconds with M-Pesa',
   },
@@ -241,7 +241,7 @@ const slides = [
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full flex items-center justify-center py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center py-3 px-4 bg-blue-900 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <div className="flex items-center space-x-2">
