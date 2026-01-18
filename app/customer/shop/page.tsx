@@ -24,7 +24,8 @@ import {
   Filter as FilterIcon,
   Star,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  CupSoda
 } from 'lucide-react';
 
 // Extensive product data for Shop page
@@ -821,7 +822,7 @@ export default function ShopPage() {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4" />
+                  <CupSoda className="h-4 w-4" />
                   New Arrivals
                 </div>
               </button>
