@@ -604,7 +604,7 @@ export default function ShopPage() {
                   <select
                     value={selectedBranch}
                     onChange={(e) => setSelectedBranch(e.target.value)}
-                    className="w-full px-4 py-3 bg-white text-slate-900 font-medium border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer appearance-none"
+                    className="w-full rounded-md px-4 py-3 bg-white text-slate-900 font-medium border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer appearance-none"
                   >
                     {branches.map((branch) => (
                       <option key={branch.id} value={branch.id}>
