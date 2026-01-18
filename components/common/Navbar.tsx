@@ -23,7 +23,7 @@ export default function Navbar() {
 
   return (
     <motion.nav 
-      className={`bg-gray-800 border-b border-gray-700 sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'py-2 shadow-lg' : 'py-3'}`}
+      className={`bg-blue-900/80 border-b border-red-400 sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'py-2 shadow-lg' : 'py-3'}`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 120, damping: 20 }}
@@ -84,7 +84,7 @@ export default function Navbar() {
             >
               <Link 
                 href="/auth/register"
-                className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors font-medium"
+                className="px-6 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 transition-colors font-medium"
               >
                 Get Started
               </Link>
@@ -111,7 +111,7 @@ export default function Navbar() {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div 
-            className="md:hidden border-t border-gray-700 bg-gray-800"
+            className="md:hidden border-t bg-blue-900/80  border-red-400"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -142,7 +142,7 @@ export default function Navbar() {
                 >
                   <Link 
                     href="/auth/login"
-                    className="block w-full px-4 py-2 text-center text-white border border-gray-600 rounded-md hover:bg-gray-700 font-medium"
+                    className="block w-full px-4 py-2 text-center bg-slate-900 text-white rounded-md hover:bg-gray-700 font-medium"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Login
