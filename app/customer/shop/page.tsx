@@ -22,7 +22,9 @@ import {
   SlidersHorizontal,
   X,
   Filter as FilterIcon,
-  Star
+  Star,
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
 
 // Extensive product data for Shop page
@@ -828,32 +830,65 @@ export default function ShopPage() {
 
           {/* Categories */}
           <div className="mb-8">
+            <style>{`
+              .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+              }
+              .hide-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+              }
+            `}</style>
             <h3 className="text-sm font-semibold text-slate-700 mb-4">Browse Categories</h3>
-            <div className="flex overflow-x-auto pb-4 gap-3 scrollbar-hide">
-              {categories.map((category) => {
-                const Icon = category.icon;
-                return (
-                  <button
-                    key={category.id}
-                    onClick={() => setActiveCategory(category.id)}
-                    className={`flex items-center gap-2 px-5 py-3.5 whitespace-nowrap transition-all rounded-xl ${
-                      activeCategory === category.id
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
-                        : 'bg-white text-slate-700 hover:bg-slate-50 hover:shadow-md border border-slate-200'
-                    }`}
-                  >
-                    <Icon className="h-4 w-4 flex-shrink-0" />
-                    <span className="font-medium">{category.name}</span>
-                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                      activeCategory === category.id
-                        ? 'bg-white/20 text-white'
-                        : 'bg-slate-100 text-slate-600'
-                    }`}>
-                      {category.count}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  const container = document.getElementById('categories-scroll');
+                  if (container) {
+                    container.scrollBy({ left: -300, behavior: 'smooth' });
+                  }
+                }}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-slate-50 border border-slate-200"
+              >
+                <ChevronLeft className="h-5 w-5 text-slate-700" />
+              </button>
+              <div id="categories-scroll" className="flex overflow-x-auto pb-4 gap-3 hide-scrollbar px-12">
+                {categories.map((category) => {
+                  const Icon = category.icon;
+                  return (
+                    <button
+                      key={category.id}
+                      onClick={() => setActiveCategory(category.id)}
+                      className={`flex items-center gap-2 px-5 py-3.5 whitespace-nowrap transition-all rounded-xl ${
+                        activeCategory === category.id
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                          : 'bg-white text-slate-700 hover:bg-slate-50 hover:shadow-md border border-slate-200'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4 flex-shrink-0" />
+                      <span className="font-medium">{category.name}</span>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                        activeCategory === category.id
+                          ? 'bg-white/20 text-white'
+                          : 'bg-slate-100 text-slate-600'
+                      }`}>
+                        {category.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => {
+                  const container = document.getElementById('categories-scroll');
+                  if (container) {
+                    container.scrollBy({ left: 300, behavior: 'smooth' });
+                  }
+                }}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-slate-50 border border-slate-200"
+              >
+                <ChevronRight className="h-5 w-5 text-slate-700" />
+              </button>
             </div>
           </div>
 
