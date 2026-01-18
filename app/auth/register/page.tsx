@@ -22,7 +22,7 @@ export default function RegisterPage() {
   // Rotating images and messages
 const slides = [
   {
-    image: '/images/drinks.jpg',
+    image: '/images/drinks4.jpg',
     gradient: 'from-blue-600/30 via-blue-700/50 to-blue-900/80',
     title: 'Join Drinx Retailers',
     subtitle: 'Start shopping from 5 branches across Kenya',

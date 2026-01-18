@@ -13,7 +13,7 @@ export default function BranchesSection() {
       address: 'Tom Mboya Street, Nairobi CBD',
       phone: '+254 700 000 001',
       hours: 'Mon-Sat: 8AM - 8PM, Sun: 9AM - 6PM',
-      image: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&h=600&fit=crop'
+      image: '/images/nrb.jpg'
     },
     {
       name: 'Kisumu',

@@ -13,7 +13,7 @@ export default function ProductsSection() {
       name: 'Coca-Cola',
       size: '500ml',
       price: '60',
-      image: '/images/drinks/cocacola.png',
+      image: '/images/cola.jpg',
       bgColor: 'bg-red-500',
       lightBg: 'bg-red-50'
     },
@@ -21,7 +21,7 @@ export default function ProductsSection() {
       name: 'Fanta Orange',
       size: '500ml',
       price: '60',
-      image: '/images/drinks/fanta.png',
+      image: '/images/fanta.jpg',
       bgColor: 'bg-orange-500',
       lightBg: 'bg-orange-50'
     },
@@ -29,7 +29,7 @@ export default function ProductsSection() {
       name: 'Sprite',
       size: '500ml',
       price: '60',
-      image: '/images/drinks/sprite.png',
+      image: '/images/sprite.jpg',
       bgColor: 'bg-green-500',
       lightBg: 'bg-green-50'
     }
