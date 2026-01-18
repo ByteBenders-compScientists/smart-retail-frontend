@@ -148,7 +148,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full flex items-center justify-center py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center py-3 px-4 bg-blue-900 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <div className="flex items-center space-x-2">
@@ -196,7 +196,7 @@ export default function LoginPage() {
 
       {/* RIGHT SIDE - ROTATING IMAGES WITH REDUCED SPACING */}
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-white p-6">
-        <div className="relative w-full h-full">
+        <div className="relative w-full h-full  ">
           {slides.map((slide, index) => (
             <div
               key={index}
