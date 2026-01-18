@@ -20,19 +20,19 @@ export default function LoginPage() {
   const slides = [
     {
       image: '/images/drinks.jpg',
-      gradient: 'from-red-600/30 to-red-900/40',
+      gradient: 'from-emerald-600/30 via-emerald-700/50 to-emerald-900/80',
       title: 'Refresh Your Day',
       subtitle: 'Quality drinks at your fingertips',
     },
     {
       image: '/images/drinks2.jpg',
-      gradient: 'from-orange-600/30 to-orange-900/40',
+      gradient: 'from-emerald-600/30 via-emerald-700/50 to-emerald-900/80',
       title: 'Same Price, All Branches',
       subtitle: 'Shop from Nairobi to Eldoret',
     },
     {
       image: '/images/drinks3.jpg',
-      gradient: 'from-green-600/30 to-green-900/40',
+      gradient: 'from-emerald-600/30 via-emerald-700/50 to-emerald-900/80',
       title: 'Quick & Easy Checkout',
       subtitle: 'Pay securely with M-Pesa',
     },

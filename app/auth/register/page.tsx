@@ -20,27 +20,26 @@ export default function RegisterPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Rotating images and messages
-  const slides = [
-    {
-      image: '/images/drinks.jpg',
-      gradient: 'from-blue-600/30 to-blue-900/40',
-      title: 'Join Drinx Retailers',
-      subtitle: 'Start shopping from 5 branches across Kenya',
-    },
-    {
-      image: '/images/drinks2.jpg',
-      gradient: 'from-purple-600/30 to-purple-900/40',
-      title: 'Best Prices Guaranteed',
-      subtitle: 'Same quality, same price at every location',
-    },
-    {
-      image: '/images/drinks3.jpg',
-      gradient: 'from-teal-600/30 to-teal-900/40',
-      title: 'Fast & Secure Payments',
-      subtitle: 'Checkout in seconds with M-Pesa',
-    },
-  ];
-
+const slides = [
+  {
+    image: '/images/drinks.jpg',
+    gradient: 'from-blue-600/30 via-blue-700/50 to-blue-900/80',
+    title: 'Join Drinx Retailers',
+    subtitle: 'Start shopping from 5 branches across Kenya',
+  },
+  {
+    image: '/images/drinks2.jpg',
+    gradient: 'from-blue-600/30 via-blue-700/50 to-blue-900/80',
+    title: 'Best Prices Guaranteed',
+    subtitle: 'Same quality, same price at every location',
+  },
+  {
+    image: '/images/drinks3.jpg',
+    gradient: 'from-blue-600/30 via-blue-700/50 to-blue-900/80',
+    title: 'Fast & Secure Payments',
+    subtitle: 'Checkout in seconds with M-Pesa',
+  },
+];
   // Auto-rotate images
   useEffect(() => {
     const interval = setInterval(() => {
