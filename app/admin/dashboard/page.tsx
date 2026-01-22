@@ -140,27 +140,7 @@ export default function AdminDashboard() {
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-4 border border-white/20">
-                  <div className="flex items-center space-x-3">
-                    <Zap className="h-8 w-8 text-yellow-400" />
-                    <div>
-                      <p className="text-xs text-gray-300">Active Now</p>
-                      <p className="text-2xl font-bold text-white">24</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-4 border border-white/20">
-                  <div className="flex items-center space-x-3">
-                    <Users className="h-8 w-8 text-green-400" />
-                    <div>
-                      <p className="text-xs text-gray-300">Online Users</p>
-                      <p className="text-2xl font-bold text-white">142</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            
             </div>
           </div>
         </div>
