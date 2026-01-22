@@ -36,10 +36,10 @@ export default function ReportTable({
           {showExport && (
             <button
               onClick={onExport}
-              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              className="flex bg-sky-500 items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
             >
               <Download className="h-4 w-4" />
-              <span className="text-sm font-medium">Export</span>
+              <span className="text-sm font-medium ">Export</span>
             </button>
           )}
         </div>

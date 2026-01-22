@@ -23,7 +23,7 @@ export default function Navbar() {
 
   return (
     <motion.nav 
-      className={`bg-blue-900/80 border-b border-red-400 sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'py-2 shadow-lg' : 'py-3'}`}
+      className={`bg-slate-700 border-b border-red-400 sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'py-2 shadow-lg' : 'py-3'}`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 120, damping: 20 }}

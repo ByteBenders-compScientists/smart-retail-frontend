@@ -6,10 +6,12 @@ import FeaturesSection from '@/components/sections/FeaturesSection';
 import ProductsSection from '@/components/sections/ProductsSection';
 import BranchesSection from '@/components/sections/BranchesSection';
 import CTASection from '@/components/sections/CTASection';
+import TopBar from '@/components/common/TopBar';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col">
+      <TopBar/>
       <Navbar />
       
       <main className="flex-grow">

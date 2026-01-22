@@ -7,8 +7,24 @@ import { motion } from 'framer-motion';
 
 export default function HeroSection() {
   return (
-    <section className="bg-white overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+    <section className="bg-slate-900 overflow-hidden relative min-h-screen flex items-center">
+      {/* Background Video */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/images/bgvid.mp4" type="video/mp4" />
+        </video>
+        {/* Slate Overlay */}
+        <div className="absolute inset-0 bg-slate-700/70"></div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <motion.div
@@ -21,14 +37,14 @@ export default function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
                 Your Favorite Drinks,
                 <span className="block text-red-500">Anytime, Anywhere</span>
               </h1>
             </motion.div>
             
             <motion.p 
-              className="text-lg md:text-xl text-gray-600 mb-8"
+              className="text-lg md:text-xl text-gray-100 mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
@@ -60,7 +76,7 @@ export default function HeroSection() {
               >
                 <Link 
                   href="/#products"
-                  className="inline-flex items-center justify-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-md hover:border-red-500 hover:text-red-500 transition-colors"
+                  className="inline-flex items-center justify-center px-8 py-4 border-2 border-gray-200 text-white font-semibold rounded-md hover:border-red-500 hover:text-red-500 hover:bg-white/10 transition-colors"
                 >
                   View Products
                 </Link>
@@ -88,7 +104,7 @@ export default function HeroSection() {
                     transition={{ delay: 0.5 + (index * 0.1) }}
                   >
                     <CheckCircle className="h-5 w-5 text-red-500" />
-                    <span className="text-gray-700">{item}</span>
+                    <span className="text-white">{item}</span>
                   </motion.div>
                 ))}
               </div>
@@ -96,7 +112,7 @@ export default function HeroSection() {
 
             {/* Stats */}
             <motion.div 
-              className="grid grid-cols-3 gap-6 mt-12 pt-12 border-t border-gray-200"
+              className="grid grid-cols-3 gap-6 mt-12 pt-12 border-t border-gray-400/30"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.5 }}
@@ -112,7 +128,7 @@ export default function HeroSection() {
                   transition={{ type: 'spring', stiffness: 300 }}
                 >
                   <p className="text-3xl font-bold text-red-500">{stat.value}</p>
-                  <p className="text-gray-600 mt-1">{stat.label}</p>
+                  <p className="text-gray-200 mt-1">{stat.label}</p>
                 </motion.div>
               ))}
             </motion.div>
@@ -120,7 +136,7 @@ export default function HeroSection() {
 
           {/* Right Image */}
           <motion.div 
-            className="relative"
+            className="relative hidden lg:block"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7 }}

@@ -21,7 +21,7 @@ export default function BranchesSection() {
       address: 'Oginga Odinga Road, Kisumu City',
       phone: '+254 700 000 002',
       hours: 'Mon-Sat: 8AM - 8PM, Sun: 9AM - 6PM',
-      image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&h=600&fit=crop'
+      image: '/images/branch2.png'
     },
     {
       name: 'Mombasa',
@@ -29,7 +29,7 @@ export default function BranchesSection() {
       address: 'Nyali Area, Mombasa Road',
       phone: '+254 700 000 003',
       hours: 'Mon-Sat: 8AM - 8PM, Sun: 9AM - 6PM',
-      image: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=800&h=600&fit=crop'
+      image: '/images/branch3.jpg'
     },
     {
       name: 'Nakuru',
@@ -37,7 +37,7 @@ export default function BranchesSection() {
       address: 'Kenyatta Avenue, Nakuru Town',
       phone: '+254 700 000 004',
       hours: 'Mon-Sat: 8AM - 8PM, Sun: 9AM - 6PM',
-      image: 'https://images.unsplash.com/photo-1601598851547-4302969d0614?w=800&h=600&fit=crop'
+      image: '/images/branch4.jpg'
     },
     {
       name: 'Eldoret',
@@ -45,7 +45,7 @@ export default function BranchesSection() {
       address: 'Uganda Road, Eldoret Town',
       phone: '+254 700 000 005',
       hours: 'Mon-Sat: 8AM - 8PM, Sun: 9AM - 6PM',
-      image: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=800&h=600&fit=crop'
+      image: '/images/branch5.jpg'
     }
   ];
 
