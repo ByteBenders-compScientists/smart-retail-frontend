@@ -25,6 +25,11 @@ export default function AdminLayout({
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Don't show layout on login page
+  if (pathname === '/admin/admin-login') {
+    return <>{children}</>;
+  }
+
   const navigation = [
     {
       name: 'Dashboard',
@@ -112,7 +117,7 @@ export default function AdminLayout({
               style={{ backgroundImage: 'url(/images/drinks.jpg)' }}
             />
             {/* Slate Overlay */}
-            <div className="absolute inset-0 bg-slate-900/85" />
+            <div className="absolute inset-0 bg-slate-900/95" />
           </div>
 
           {/* Sidebar Content */}
@@ -128,10 +133,11 @@ export default function AdminLayout({
             {/* Logo */}
             <div className="flex items-center px-6 py-6 border-b border-white/10">
               <Image
-                src="/images/logodark.png"
+                src="/images/light.png"
                 alt="Drinx Logo"
                 width={180}
                 height={36}
+                className="brightness-0 invert"
               />
             </div>
 
