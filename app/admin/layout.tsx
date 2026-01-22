@@ -1,20 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { 
-  LayoutDashboard, 
-  Package, 
-  BarChart3, 
+import {
+  LayoutDashboard,
+  Package,
+  BarChart3,
   LogOut,
   Menu,
   X,
   Bell,
   User,
-  Settings
+  Settings,
 } from 'lucide-react';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { ROUTES } from '@/lib/constants';
+
+const ADMIN_LOGIN_PATH = '/admin/admin-login';
 
 export default function AdminLayout({
   children,
@@ -23,7 +27,33 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, isAuthenticated, isHydrated, authCheckDone, logout, getDashboardPath } = useAuthContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isAdminLoginPage = pathname === ADMIN_LOGIN_PATH;
+
+  useEffect(() => {
+    if (!isHydrated || !authCheckDone || isAdminLoginPage) return;
+    if (!isAuthenticated || !user) {
+      router.replace(ROUTES.ADMIN_LOGIN);
+      return;
+    }
+    if (user.role !== 'admin') {
+      router.replace(getDashboardPath(user.role));
+      return;
+    }
+  }, [isHydrated, authCheckDone, isAuthenticated, user, isAdminLoginPage, router, getDashboardPath]);
+
+  if (isAdminLoginPage) {
+    return <>{children}</>;
+  }
+
+  if (!authCheckDone || !isHydrated || !isAuthenticated || user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-8 h-8 border-4 border-slate-900 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const navigation = [
     {
@@ -43,8 +73,9 @@ export default function AdminLayout({
     },
   ];
 
-  const handleLogout = () => {
-    router.push('/admin/admin-login');
+  const handleLogout = async () => {
+    await logout();
+    router.push(ROUTES.ADMIN_LOGIN);
   };
 
   return (
@@ -90,8 +121,8 @@ export default function AdminLayout({
             {/* Admin Profile */}
             <div className="flex items-center space-x-3 pl-4 border-l border-gray-200">
               <div className="hidden sm:block text-right">
-                <p className="text-sm font-semibold text-gray-900">Admin</p>
-                <p className="text-xs text-gray-500">Nairobi HQ</p>
+                <p className="text-sm font-semibold text-gray-900">{user?.name ?? 'Admin'}</p>
+                <p className="text-xs text-gray-500">{user?.email ?? 'Nairobi HQ'}</p>
               </div>
               <div className="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center">
                 <User className="h-5 w-5 text-white" />
@@ -137,8 +168,8 @@ export default function AdminLayout({
                 <User className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-white">Administrator</p>
-                <p className="text-xs text-gray-300">Nairobi HQ</p>
+                <p className="text-sm font-semibold text-white">{user?.name ?? 'Administrator'}</p>
+                <p className="text-xs text-gray-300 truncate max-w-[140px]">{user?.email ?? 'Nairobi HQ'}</p>
               </div>
             </div>
           </div>

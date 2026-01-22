@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, ArrowRight, Check, Shield, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const { user, isAuthenticated, isHydrated, login, getDashboardPath } = useAuthContext();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -16,10 +18,6 @@ export default function AdminLoginPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  // Hardcoded admin credentials
-  const ADMIN_EMAIL = 'admin@drinxretailers.com';
-  const ADMIN_PASSWORD = 'admin123';
 
   // Rotating images and messages
   const slides = [
@@ -56,22 +54,19 @@ export default function AdminLoginPage() {
     setIsLoading(true);
     setError('');
 
-    // Simulate login delay
-    setTimeout(() => {
-      // Check credentials
-      if (formData.email === ADMIN_EMAIL && formData.password === ADMIN_PASSWORD) {
-        setIsLoading(false);
-        setShowSuccess(true);
+    try {
+      const { user } = await login(formData);
+      setShowSuccess(true);
 
-        // Navigate to admin dashboard after success animation
-        setTimeout(() => {
-          router.push('/admin/dashboard');
-        }, 1500);
-      } else {
-        setIsLoading(false);
-        setError('Invalid admin credentials. Please try again.');
-      }
-    }, 1000);
+      const dashboard = getDashboardPath(user.role);
+      setTimeout(() => {
+        router.push(dashboard);
+      }, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid credentials. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,8 +74,16 @@ export default function AdminLoginPage() {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    setError(''); // Clear error when user types
+    setError('');
   };
+
+  if (isHydrated && isAuthenticated && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-8 h-8 border-4 border-slate-900 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -144,7 +147,7 @@ export default function AdminLoginPage() {
                       value={formData.email}
                       onChange={handleChange}
                       className="block w-full placeholder:text-gray-400 outline-0 text-gray-900 pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
-                      placeholder="admin@drinxretailers.com"
+                      placeholder="admin@example.com"
                     />
                   </div>
                 </div>
@@ -191,16 +194,15 @@ export default function AdminLoginPage() {
                 </button>
               </form>
 
-              {/* Dev Credentials */}
-              <div className="mt-8 p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                <p className="text-xs font-semibold text-slate-900 mb-2">Development Credentials:</p>
-                <p className="text-xs text-slate-600 font-mono">Email: admin@drinxretailers.com</p>
-                <p className="text-xs text-slate-600 font-mono">Password: admin123</p>
-              </div>
-
               {/* Footer */}
-              <div className="mt-6 text-center">
-                <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
+              <div className="mt-6 space-y-3 text-center">
+                <p className="text-sm text-gray-600">
+                  Customer?{' '}
+                  <Link href="/auth/login" className="text-sky-600 font-medium hover:text-sky-700">
+                    Sign in here
+                  </Link>
+                </p>
+                <Link href="/" className="block text-sm text-gray-600 hover:text-gray-900">
                   ← Back to homepage
                 </Link>
               </div>

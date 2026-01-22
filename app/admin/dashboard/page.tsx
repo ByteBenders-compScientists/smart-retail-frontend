@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { DollarSign, ShoppingCart, Package, TrendingUp, Users, Zap } from 'lucide-react';
+import { DollarSign, ShoppingCart, Package, TrendingUp, Users, Zap, BarChart3 } from 'lucide-react';
 import StatsCard from '@/components/admin/StatsCard';
 import SalesChart from '@/components/admin/SalesChart';
 import BranchStats from '@/components/admin/BranchStats';

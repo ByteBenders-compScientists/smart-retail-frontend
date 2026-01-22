@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Navigation from '@/components/customer/Navigation';
+import { useAuthContext } from '@/contexts/AuthContext';
 import MarqueeBanner from '@/components/customer/MarqueeBanner';
 import FilterSidebar from '@/components/customer/FilterSidebar';
 import ProductCard from '@/components/customer/ProductCard';
@@ -214,6 +215,7 @@ const branches = [
 ];
 
 export default function DashboardPage() {
+  const { user } = useAuthContext();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -360,7 +362,7 @@ export default function DashboardPage() {
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
                 <div>
                   <h1 className="text-3xl lg:text-4xl font-bold mb-3">
-                    Welcome back, John! 👋
+                    Welcome back, {user?.name ?? 'there'}! 👋
                   </h1>
                   <p className="text-white text-lg">
                     Shop singles, litres, or crates from any of our 5 branches.
