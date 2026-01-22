@@ -29,6 +29,7 @@ export async function api<T>(
     ...init,
     headers,
     credentials: 'include',
+    cache: 'no-store',
   });
 
   if (!res.ok) {

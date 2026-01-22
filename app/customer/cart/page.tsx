@@ -6,6 +6,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/components/customer/Navigation';
 import MarqueeBanner from '@/components/customer/MarqueeBanner';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useBranches } from '@/hooks/useBranches';
+import * as orderService from '@/services/orderService';
+import * as paymentService from '@/services/paymentService';
+import { ROUTES } from '@/lib/constants';
 import { 
   ShoppingCart, 
   Trash2, 
@@ -22,11 +27,9 @@ import {
   AlertCircle,
   MapPin,
   Package,
-  Tag,
-  ChevronRight,
   Heart,
-  RefreshCw,
-  Store
+  Store,
+  XCircle
 } from 'lucide-react';
 
 interface CartItem {
@@ -62,74 +65,35 @@ interface PaymentMethod {
 }
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: '1',
-      name: 'Coca-Cola Original 500ml',
-      brand: 'Coke',
-      price: 60.00,
-      originalPrice: 65.00,
-      image: '/images/drinks/coke.png',
-      quantity: 3,
-      maxQuantity: 45,
-      branch: 'Nairobi HQ',
-      volume: '500ml',
-      unit: 'single'
-    },
-    {
-      id: '2',
-      name: 'Fanta Orange 500ml',
-      brand: 'Fanta',
-      price: 60.00,
-      image: '/images/drinks/orangee.png',
-      quantity: 2,
-      maxQuantity: 32,
-      branch: 'Nairobi HQ',
-      volume: '500ml',
-      unit: 'single'
-    },
-    {
-      id: '3',
-      name: 'Sprite Lemon-Lime 500ml Crate',
-      brand: 'Sprite',
-      price: 1400.00,
-      image: '/images/drinks/spritecrate.png',
-      quantity: 1,
-      maxQuantity: 110,
-      branch: 'Nairobi HQ',
-      volume: '500ml x 24',
-      unit: 'crate'
-    },
-    {
-      id: '4',
-      name: 'Coca-Cola Zero Sugar 500ml',
-      brand: 'Coke',
-      price: 65.00,
-      image: '/images/drinks/zero.png',
-      quantity: 4,
-      maxQuantity: 28,
-      branch: 'Nairobi HQ',
-      volume: '500ml',
-      unit: 'single'
-    }
-  ]);
+  const { user, token } = useAuthContext();
+  const { branches: apiBranches, isLoading: branchesLoading } = useBranches(token);
 
-  const [selectedBranch, setSelectedBranch] = useState('Nairobi HQ');
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  const [selectedBranchId, setSelectedBranchId] = useState<string>('');
   const [selectedDelivery, setSelectedDelivery] = useState('pickup');
   const [selectedPayment, setSelectedPayment] = useState('mpesa');
-  const [mpesaPhone, setMpesaPhone] = useState('');
+  const [mpesaPhone, setMpesaPhone] = useState(user?.phone ?? '');
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [showMpesaModal, setShowMpesaModal] = useState(false);
   const [orderId, setOrderId] = useState('');
+  const [checkoutRequestId, setCheckoutRequestId] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'completed' | 'failed'>('pending');
+  const [error, setError] = useState<string | null>(null);
 
-  const branches = [
-    'Nairobi HQ',
-    'Kisumu Branch',
-    'Mombasa Branch',
-    'Nakuru Branch',
-    'Eldoret Branch'
-  ];
+  const branchOptions = apiBranches.map((b) => ({
+    id: b.id,
+    name: b.isHeadquarter ? `${b.name} (HQ)` : b.name,
+    displayName: b.name,
+  }));
+
+  useEffect(() => {
+    if (apiBranches.length > 0 && !selectedBranchId) {
+      const defaultBranch = apiBranches.find((b) => b.isHeadquarter) ?? apiBranches[0];
+      setSelectedBranchId(defaultBranch.id);
+    }
+  }, [apiBranches, selectedBranchId]);
 
   const deliveryOptions: DeliveryOption[] = [
     {
@@ -240,31 +204,123 @@ export default function CartPage() {
     return regex.test(phone);
   };
 
+  const formatPhoneForMpesa = (phone: string): string => {
+    // Convert to 254XXXXXXXXX format
+    if (phone.startsWith('+254')) {
+      return phone.slice(1);
+    }
+    if (phone.startsWith('0')) {
+      return '254' + phone.slice(1);
+    }
+    if (phone.startsWith('254')) {
+      return phone;
+    }
+    return '254' + phone;
+  };
+
   const handlePlaceOrder = async () => {
     if (!validateMpesaPhone(mpesaPhone)) {
-      alert('Please enter a valid M-Pesa phone number');
+      setError('Please enter a valid M-Pesa phone number');
+      return;
+    }
+
+    if (!selectedBranchId) {
+      setError('Please select a branch');
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      setError('Your cart is empty');
       return;
     }
 
     setIsProcessing(true);
-    
-    // Simulate M-Pesa payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
+    setError(null);
+    setPaymentStatus('pending');
+
+    try {
+      // Step 1: Create order
+      const orderData = {
+        branchId: selectedBranchId,
+        items: cartItems.map((item) => ({
+          productId: item.id,
+          productBrand: item.brand,
+          quantity: item.quantity,
+          price: item.price,
+          subtotal: item.price * item.quantity,
+        })),
+        totalAmount: total,
+        phone: formatPhoneForMpesa(mpesaPhone),
+      };
+
+      const orderResponse = await orderService.createOrder(orderData, token);
+      const createdOrderId = orderResponse.order.ID;
+      setOrderId(createdOrderId);
+
+      // Step 2: Initiate M-Pesa payment
+      const paymentData = {
+        orderId: createdOrderId,
+        phone: formatPhoneForMpesa(mpesaPhone),
+        amount: total,
+      };
+
+      const paymentResponse = await paymentService.initiateMpesaPayment(paymentData, token);
+      setCheckoutRequestId(paymentResponse.checkoutRequestId);
       setShowMpesaModal(true);
-      
-      // Generate random order ID
-      const newOrderId = 'ORD-' + Date.now().toString().slice(-8);
-      setOrderId(newOrderId);
-      
-      // After M-Pesa modal, simulate successful payment
-      setTimeout(() => {
-        setShowMpesaModal(false);
-        setOrderPlaced(true);
-        setCartItems([]); // Clear cart
-      }, 3000);
-    }, 1500);
+      // Payment status will be polled by useEffect when orderId and showMpesaModal are set
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to place order. Please try again.');
+      setIsProcessing(false);
+    }
   };
+
+  useEffect(() => {
+    if (!orderId || !showMpesaModal) return;
+
+    let pollInterval: NodeJS.Timeout | null = null;
+    let attempts = 0;
+    const maxAttempts = 60;
+
+    const pollPaymentStatus = async () => {
+      attempts++;
+      try {
+        const status = await paymentService.getPaymentStatus(orderId, token);
+        setPaymentStatus(status.status);
+
+        if (status.status === 'completed') {
+          if (pollInterval) clearInterval(pollInterval);
+          setTimeout(() => {
+            setShowMpesaModal(false);
+            setOrderPlaced(true);
+            setCartItems([]);
+            setIsProcessing(false);
+          }, 2000);
+        } else if (status.status === 'failed') {
+          if (pollInterval) clearInterval(pollInterval);
+          setError('Payment failed. Please try again.');
+          setIsProcessing(false);
+        } else if (attempts >= maxAttempts) {
+          if (pollInterval) clearInterval(pollInterval);
+          setError('Payment is taking longer than expected. Please check your M-Pesa notifications.');
+          setIsProcessing(false);
+        }
+      } catch {
+        if (attempts >= maxAttempts) {
+          if (pollInterval) clearInterval(pollInterval);
+          setError('Unable to verify payment status. Please check your orders.');
+          setIsProcessing(false);
+        }
+      }
+    };
+
+    // Start polling immediately, then every 3 seconds
+    pollPaymentStatus();
+    pollInterval = setInterval(pollPaymentStatus, 3000);
+
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [orderId, showMpesaModal, token]);
 
   const continueShopping = () => {
     window.location.href = '/customer/shop';
@@ -330,12 +386,12 @@ export default function CartPage() {
                   Order ID: <span className="font-semibold text-slate-900">{orderId}</span>
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button
-                    onClick={() => window.location.href = '/customer/orders'}
-                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold hover:shadow-lg transition-all rounded-lg"
+                  <Link
+                    href={ROUTES.CUSTOMER_ORDERS}
+                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold hover:shadow-lg transition-all rounded-lg text-center"
                   >
                     View Order Details
-                  </button>
+                  </Link>
                   <button
                     onClick={continueShopping}
                     className="px-6 py-3 bg-white border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition-colors rounded-lg"
@@ -377,18 +433,21 @@ export default function CartPage() {
                 </div>
                 <div className="space-y-4">
                   <select
-                    value={selectedBranch}
-                    onChange={(e) => setSelectedBranch(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+                    value={selectedBranchId}
+                    onChange={(e) => setSelectedBranchId(e.target.value)}
+                    disabled={branchesLoading}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-300 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer disabled:opacity-50"
                   >
-                    {branches.map((branch) => (
-                      <option key={branch} value={branch}>
-                        {branch}
+                    {branchOptions.map((branch) => (
+                      <option key={branch.id} value={branch.id}>
+                        {branch.name}
                       </option>
                     ))}
                   </select>
                   <p className="text-sm text-slate-600">
-                    All items in your cart are available at {selectedBranch}
+                    {selectedBranchId
+                      ? `All items in your cart are available at ${branchOptions.find((b) => b.id === selectedBranchId)?.displayName ?? 'selected branch'}`
+                      : 'Select a branch'}
                   </p>
                 </div>
               </div>
@@ -416,10 +475,12 @@ export default function CartPage() {
                           {/* Product Image */}
                           <div className="flex-shrink-0 w-24 h-24 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg flex items-center justify-center p-2">
                             <div className="relative w-full h-full">
-                              <img
+                              <Image
                                 src={item.image}
                                 alt={item.name}
-                                className="w-full h-full object-contain"
+                                fill
+                                className="object-contain"
+                                sizes="96px"
                               />
                             </div>
                           </div>
@@ -791,23 +852,99 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-center gap-3 py-3">
-                <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
-                <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse delay-100"></div>
-                <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse delay-200"></div>
+              {paymentStatus === 'pending' && (
+                <>
+                  <div className="flex items-center justify-center gap-3 py-3">
+                    <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
+                    <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse delay-100"></div>
+                    <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse delay-200"></div>
+                  </div>
+                  <p className="text-center text-sm text-slate-500">
+                    Enter your M-Pesa PIN on your phone to complete the payment
+                  </p>
+                </>
+              )}
+
+              {paymentStatus === 'completed' && (
+                <div className="text-center py-4">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="h-8 w-8 text-green-600" />
+                  </div>
+                  <p className="text-lg font-semibold text-green-600">Payment Successful!</p>
+                  <p className="text-sm text-slate-500 mt-2">Your order has been confirmed</p>
+                </div>
+              )}
+
+              {paymentStatus === 'failed' && (
+                <div className="text-center py-4">
+                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <XCircle className="h-8 w-8 text-red-600" />
+                  </div>
+                  <p className="text-lg font-semibold text-red-600">Payment Failed</p>
+                  <p className="text-sm text-slate-500 mt-2">Please try again or contact support</p>
+                </div>
+              )}
+            </div>
+
+            {paymentStatus === 'pending' && (
+              <div className="flex items-center gap-3 text-sm text-slate-600">
+                <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                <p>
+                  Don&apos;t see the prompt? Check your phone&apos;s messages or dial *234# to approve the payment
+                </p>
               </div>
+            )}
 
-              <p className="text-center text-sm text-slate-500">
-                Enter your M-Pesa PIN on your phone to complete the payment
-              </p>
-            </div>
+            {paymentStatus === 'completed' && (
+              <button
+                onClick={() => {
+                  setShowMpesaModal(false);
+                  setOrderPlaced(true);
+                  setCartItems([]);
+                }}
+                className="w-full mt-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Continue
+              </button>
+            )}
 
-            <div className="flex items-center gap-3 text-sm text-slate-600">
-              <AlertCircle className="h-5 w-5 flex-shrink-0" />
-              <p>
-                Don&apos;t see the prompt? Check your phone&apos;s messages or dial *234# to approve the payment
-              </p>
+            {paymentStatus === 'failed' && (
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={() => {
+                    setShowMpesaModal(false);
+                    setPaymentStatus('pending');
+                  }}
+                  className="flex-1 py-3 bg-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-300 transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={handlePlaceOrder}
+                  className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Retry Payment
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="fixed bottom-4 right-4 max-w-md bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg z-50">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-red-800">{error}</p>
             </div>
+            <button
+              onClick={() => setError(null)}
+              className="text-red-600 hover:text-red-800"
+            >
+              ×
+            </button>
           </div>
         </div>
       )}

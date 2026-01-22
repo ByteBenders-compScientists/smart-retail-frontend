@@ -1,11 +1,15 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/components/customer/Navigation';
 import MarqueeBanner from '@/components/customer/MarqueeBanner';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useOrders } from '@/hooks/useOrders';
+import type { OrderDisplay } from '@/types/order';
+import { ROUTES } from '@/lib/constants';
 import { 
   Package, 
   Truck, 
@@ -29,8 +33,24 @@ import {
   ArrowUpRight,
   ShoppingBag,
   BarChart3,
-  Phone
+  Phone,
+  AlertCircle
 } from 'lucide-react';
+
+type UIOrderStatus = 'delivered' | 'processing' | 'shipped' | 'cancelled' | 'pending';
+
+function mapOrderStatus(apiStatus: OrderDisplay['orderStatus']): UIOrderStatus {
+  switch (apiStatus) {
+    case 'completed':
+      return 'delivered';
+    case 'processing':
+      return 'processing';
+    case 'cancelled':
+      return 'cancelled';
+    default:
+      return 'pending';
+  }
+}
 
 interface OrderItem {
   id: string;
@@ -46,7 +66,7 @@ interface Order {
   id: string;
   orderNumber: string;
   date: string;
-  status: 'delivered' | 'processing' | 'shipped' | 'cancelled' | 'pending';
+  status: UIOrderStatus;
   branch: string;
   items: OrderItem[];
   totalAmount: number;
@@ -58,179 +78,36 @@ interface Order {
   review?: string;
 }
 
-export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: '1',
-      orderNumber: 'ORD-20240115-001',
-      date: '2024-01-15',
-      status: 'delivered',
-      branch: 'Nairobi HQ',
-      items: [
-        {
-          id: '1',
-          name: 'Coca-Cola Original 500ml',
-          brand: 'Coke',
-          price: 60,
-          quantity: 3,
-          image: '/images/drinks/coke.png',
-          volume: '500ml'
-        },
-        {
-          id: '2',
-          name: 'Fanta Orange 500ml',
-          brand: 'Fanta',
-          price: 60,
-          quantity: 2,
-          image: '/images/drinks/orangee.png',
-          volume: '500ml'
-        }
-      ],
-      totalAmount: 300,
-      paymentMethod: 'M-Pesa',
-      trackingNumber: 'TRK-7890123456',
-      estimatedDelivery: '2024-01-16',
-      deliveredDate: '2024-01-16',
-      rating: 5,
-      review: 'Great service! Fast delivery and fresh products.'
-    },
-    {
-      id: '2',
-      orderNumber: 'ORD-20240114-002',
-      date: '2024-01-14',
-      status: 'shipped',
-      branch: 'Kisumu Branch',
-      items: [
-        {
-          id: '3',
-          name: 'Sprite Lemon-Lime 500ml Crate',
-          brand: 'Sprite',
-          price: 1400,
-          quantity: 1,
-          image: '/images/drinks/spritecrate.png',
-          volume: '500ml x 24'
-        }
-      ],
-      totalAmount: 1400,
-      paymentMethod: 'M-Pesa',
-      trackingNumber: 'TRK-7890123457',
-      estimatedDelivery: '2024-01-17'
-    },
-    {
-      id: '3',
-      orderNumber: 'ORD-20240113-003',
-      date: '2024-01-13',
-      status: 'processing',
-      branch: 'Mombasa Branch',
-      items: [
-        {
-          id: '4',
-          name: 'Coca-Cola Zero Sugar 500ml',
-          brand: 'Coke',
-          price: 65,
-          quantity: 4,
-          image: '/images/drinks/zero.png',
-          volume: '500ml'
-        },
-        {
-          id: '5',
-          name: 'Fanta Orange 500ml',
-          brand: 'Fanta',
-          price: 60,
-          quantity: 2,
-          image: '/images/drinks/orangee.png',
-          volume: '500ml'
-        },
-        {
-          id: '6',
-          name: 'Sprite Lemon-Lime 500ml',
-          brand: 'Sprite',
-          price: 60,
-          quantity: 3,
-          image: '/images/drinks/sp.png',
-          volume: '500ml'
-        }
-      ],
-      totalAmount: 560,
-      paymentMethod: 'Credit Card',
-      estimatedDelivery: '2024-01-18'
-    },
-    {
-      id: '4',
-      orderNumber: 'ORD-20240112-004',
-      date: '2024-01-12',
-      status: 'pending',
-      branch: 'Nairobi HQ',
-      items: [
-        {
-          id: '7',
-          name: 'Coca-Cola Original 1 Litre',
-          brand: 'Coke',
-          price: 110,
-          quantity: 2,
-          image: '/images/drinks/litre.webp',
-          volume: '1L'
-        }
-      ],
-      totalAmount: 220,
-      paymentMethod: 'M-Pesa'
-    },
-    {
-      id: '5',
-      orderNumber: 'ORD-20240110-005',
-      date: '2024-01-10',
-      status: 'cancelled',
-      branch: 'Nakuru Branch',
-      items: [
-        {
-          id: '8',
-          name: 'Fanta Orange 500ml Crate',
-          brand: 'Fanta',
-          price: 1400,
-          quantity: 1,
-          image: '/images/drinks/fantas.png',
-          volume: '500ml x 24'
-        }
-      ],
-      totalAmount: 1400,
-      paymentMethod: 'M-Pesa'
-    },
-    {
-      id: '6',
-      orderNumber: 'ORD-20240108-006',
-      date: '2024-01-08',
-      status: 'delivered',
-      branch: 'Eldoret Branch',
-      items: [
-        {
-          id: '9',
-          name: 'Coca-Cola Vanilla 500ml',
-          brand: 'Coke',
-          price: 70,
-          quantity: 5,
-          image: '/images/drinks/vani.png',
-          volume: '500ml'
-        },
-        {
-          id: '10',
-          name: 'Fanta Pineapple 500ml',
-          brand: 'Fanta',
-          price: 60,
-          quantity: 3,
-          image: '/images/drinks/pine.webp',
-          volume: '500ml'
-        }
-      ],
-      totalAmount: 530,
-      paymentMethod: 'Cash on Delivery',
-      trackingNumber: 'TRK-7890123458',
-      estimatedDelivery: '2024-01-09',
-      deliveredDate: '2024-01-09',
-      rating: 4
-    }
-  ]);
+function mapOrderDisplayToUI(order: OrderDisplay): Order {
+  return {
+    id: order.id,
+    orderNumber: `ORD-${order.id.slice(0, 8).toUpperCase()}`,
+    date: order.createdAt.split('T')[0],
+    status: mapOrderStatus(order.orderStatus),
+    branch: order.branchName,
+    items: order.items.map((item) => ({
+      id: item.id,
+      name: item.productName,
+      brand: item.productBrand,
+      price: item.price,
+      quantity: item.quantity,
+      image: item.image ?? '/images/placeholder.png',
+      volume: item.volume ?? '',
+    })),
+    totalAmount: order.totalAmount,
+    paymentMethod: order.paymentMethod === 'mpesa' ? 'M-Pesa' : order.paymentMethod,
+    deliveredDate: order.completedAt?.split('T')[0],
+  };
+}
 
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>(orders);
+export default function OrdersPage() {
+  const { token } = useAuthContext();
+  const { orders: apiOrders, isLoading, error, refetch } = useOrders(token);
+
+  const orders = useMemo(() => apiOrders.map(mapOrderDisplayToUI), [apiOrders]);
+
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [branchFilter, setBranchFilter] = useState('all');
@@ -320,9 +197,14 @@ export default function OrdersPage() {
     return `${Math.floor(diffDays / 365)} years ago`;
   };
 
+  // Update filtered orders when orders change
+  useEffect(() => {
+    setFilteredOrders(orders);
+  }, [orders]);
+
   // Filter orders
   useEffect(() => {
-    let result = orders;
+    let result = [...orders];
 
     // Search filter
     if (searchQuery) {
@@ -344,14 +226,15 @@ export default function OrdersPage() {
 
     // Branch filter
     if (branchFilter !== 'all') {
-      const branchMap: Record<string, string> = {
-        'nairobi': 'Nairobi HQ',
-        'kisumu': 'Kisumu Branch',
-        'mombasa': 'Mombasa Branch',
-        'nakuru': 'Nakuru Branch',
-        'eldoret': 'Eldoret Branch'
+      const branchMap: Record<string, string[]> = {
+        'nairobi': ['Nairobi', 'Nairobi HQ'],
+        'kisumu': ['Kisumu', 'Kisumu Branch'],
+        'mombasa': ['Mombasa', 'Mombasa Branch'],
+        'nakuru': ['Nakuru', 'Nakuru Branch'],
+        'eldoret': ['Eldoret', 'Eldoret Branch']
       };
-      result = result.filter(order => order.branch === branchMap[branchFilter]);
+      const branchNames = branchMap[branchFilter] ?? [];
+      result = result.filter(order => branchNames.some(name => order.branch.includes(name)));
     }
 
     // Date filter
@@ -442,6 +325,26 @@ export default function OrdersPage() {
       <Navigation />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-red-800">{error}</p>
+                <p className="text-xs text-red-600 mt-1">Check your connection and try again.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => refetch()}
+              className="flex items-center gap-2 px-3 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg text-sm font-medium"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -456,7 +359,7 @@ export default function OrdersPage() {
             
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                href="/customer/shop"
+                href={ROUTES.CUSTOMER_SHOP}
                 className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold hover:shadow-lg transition-all rounded-lg"
               >
                 <ShoppingBag className="h-5 w-5" />
@@ -688,7 +591,12 @@ export default function OrdersPage() {
 
           {/* Orders List */}
           <div className="divide-y divide-slate-100">
-            {filteredOrders.length > 0 ? (
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-24">
+                <RefreshCw className="h-12 w-12 text-blue-600 animate-spin mb-4" />
+                <p className="text-gray-600 font-medium">Loading orders...</p>
+              </div>
+            ) : filteredOrders.length > 0 ? (
               filteredOrders.map((order) => {
                 const StatusIcon = getStatusIcon(order.status);
                 const isExpanded = expandedOrder === order.id;
@@ -951,7 +859,7 @@ export default function OrdersPage() {
                     : 'You haven\'t placed any orders yet'}
                 </p>
                 <Link
-                  href="/customer/shop"
+                  href={ROUTES.CUSTOMER_SHOP}
                   className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold hover:shadow-lg transition-all rounded-lg"
                 >
                   <ShoppingBag className="h-5 w-5" />
