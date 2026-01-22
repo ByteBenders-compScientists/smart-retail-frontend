@@ -1,10 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Navigation from '@/components/customer/Navigation';
 import MarqueeBanner from '@/components/customer/MarqueeBanner';
 import FilterSidebar from '@/components/customer/FilterSidebar';
 import ProductCard from '@/components/customer/ProductCard';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useProducts } from '@/hooks/useProducts';
+import { useBranches } from '@/hooks/useBranches';
+import { useBranchInventory } from '@/hooks/useBranchInventory';
+import { useCart } from '@/hooks/useCart';
+import type { ProductDisplay } from '@/types/product';
 import { 
   Filter, 
   Search, 
@@ -25,335 +31,10 @@ import {
   Star,
   ChevronRight,
   ChevronLeft,
-  CupSoda
+  CupSoda,
+  AlertCircle
 } from 'lucide-react';
 
-// Extensive product data for Shop page
-const products = [
-  {
-    id: '1',
-    name: 'Coca-Cola Original 500ml',
-    brand: 'Coke',
-    description: 'Classic Coca-Cola taste in a convenient 500ml bottle. Perfect refreshment.',
-    price: 60.00,
-    originalPrice: 65.00,
-    image: '/images/drinks/coke.png',
-    rating: 4.8,
-    reviews: 1250,
-    stock: 45,
-    category: 'Soft Drinks',
-    branches: ['Nairobi HQ', 'Kisumu Branch', 'Mombasa Branch', 'Nakuru Branch', 'Eldoret Branch'],
-    volume: '500ml',
-    unit: 'single',
-    tags: ['Bestseller', 'Limited Offer']
-  },
-  {
-    id: '2',
-    name: 'Coca-Cola Original 500ml Crate',
-    brand: 'Coke',
-    description: 'Coca-Cola 500ml crate of 24 bottles. Perfect for parties and events.',
-    price: 1400.00,
-    originalPrice: 1560.00,
-    image: '/images/drinks/cokes.png',
-    rating: 4.8,
-    reviews: 850,
-    stock: 120,
-    category: 'Soft Drinks',
-    branches: ['Nairobi HQ', 'Kisumu Branch', 'Mombasa Branch', 'Nakuru Branch', 'Eldoret Branch'],
-    volume: '500ml x 24',
-    unit: 'crate',
-    tags: ['Bulk', 'Best Value']
-  },
-  {
-    id: '3',
-    name: 'Coca-Cola Original 1 Litre',
-    brand: 'Coke',
-    description: 'Coca-Cola in a larger 1 litre bottle. Great for sharing.',
-    price: 110.00,
-    image: '/images/drinks/litre.webp',
-    rating: 4.7,
-    reviews: 680,
-    stock: 80,
-    category: 'Soft Drinks',
-    branches: ['Nairobi HQ', 'Kisumu Branch', 'Mombasa Branch', 'Nakuru Branch', 'Eldoret Branch'],
-    volume: '1L',
-    unit: 'single',
-    tags: ['Family Size']
-  },
-  {
-    id: '4',
-    name: 'Coca-Cola Original 2 Litre',
-    brand: 'Coke',
-    description: 'Large 2 litre Coca-Cola bottle for gatherings and family occasions.',
-    price: 180.00,
-    image: '/images/drinks/coke2l.png',
-    rating: 4.6,
-    reviews: 420,
-    stock: 35,
-    category: 'Soft Drinks',
-    branches: ['Nairobi HQ', 'Mombasa Branch', 'Nakuru Branch'],
-    volume: '2L',
-    unit: 'single',
-    tags: ['Party Size']
-  },
-  {
-    id: '5',
-    name: 'Fanta Orange 500ml',
-    brand: 'Fanta',
-    description: 'Bursting with orange flavor. Refreshing anytime.',
-    price: 60.00,
-    image: '/images/drinks/orangee.png',
-    rating: 4.6,
-    reviews: 980,
-    stock: 32,
-    category: 'Soft Drinks',
-    branches: ['Nairobi HQ', 'Mombasa Branch', 'Eldoret Branch'],
-    volume: '500ml',
-    unit: 'single',
-    tags: ['Bestseller']
-  },
-  {
-    id: '6',
-    name: 'Fanta Orange 500ml Crate',
-    brand: 'Fanta',
-    description: 'Fanta Orange 500ml crate of 24 bottles. Bulk savings!',
-    price: 1400.00,
-    image: '/images/drinks/fantas.png',
-    rating: 4.6,
-    reviews: 520,
-    stock: 95,
-    category: 'Soft Drinks',
-    branches: ['Nairobi HQ', 'Mombasa Branch', 'Eldoret Branch'],
-    volume: '500ml x 24',
-    unit: 'crate',
-    tags: ['Bulk', 'Best Value']
-  },
-  {
-    id: '7',
-    name: 'Fanta Orange 1 Litre',
-    brand: 'Fanta',
-    description: 'Fanta Orange in 1 litre bottle. Maximum refreshment.',
-    price: 110.00,
-    image: '/images/drinks/fanta1l.png',
-    rating: 4.5,
-    reviews: 320,
-    stock: 45,
-    category: 'Soft Drinks',
-    branches: ['Nairobi HQ', 'Mombasa Branch'],
-    volume: '1L',
-    unit: 'single',
-    tags: ['Family Size']
-  },
-  {
-    id: '8',
-    name: 'Fanta Orange 2 Litre',
-    brand: 'Fanta',
-    description: 'Large 2 litre Fanta Orange bottle. Perfect for parties.',
-    price: 180.00,
-    image: '/images/drinks/fant.png',
-    rating: 4.5,
-    reviews: 420,
-    stock: 60,
-    category: 'Soft Drinks',
-    branches: ['Nairobi HQ', 'Mombasa Branch'],
-    volume: '2L',
-    unit: 'single',
-    tags: ['Party Size']
-  },
-  {
-    id: '9',
-    name: 'Sprite Lemon-Lime 500ml',
-    brand: 'Sprite',
-    description: 'Crisp, clean lemon-lime flavor. Caffeine-free.',
-    price: 60.00,
-    image: '/images/drinks/sp.png',
-    rating: 4.7,
-    reviews: 1120,
-    stock: 58,
-    category: 'Soft Drinks',
-    branches: ['Nairobi HQ', 'Kisumu Branch', 'Nakuru Branch'],
-    volume: '500ml',
-    unit: 'single',
-    tags: ['Bestseller']
-  },
-  {
-    id: '10',
-    name: 'Sprite Lemon-Lime 500ml Crate',
-    brand: 'Sprite',
-    description: 'Sprite 500ml crate of 24 bottles. Stock up and save.',
-    price: 1400.00,
-    image: '/images/drinks/spritecrate.png',
-    rating: 4.7,
-    reviews: 640,
-    stock: 110,
-    category: 'Soft Drinks',
-    branches: ['Nairobi HQ', 'Kisumu Branch', 'Nakuru Branch'],
-    volume: '500ml x 24',
-    unit: 'crate',
-    tags: ['Bulk', 'Best Value']
-  },
-  {
-    id: '11',
-    name: 'Sprite Lemon-Lime 1 Litre',
-    brand: 'Sprite',
-    description: 'Sprite in 1 litre bottle. Great for sharing.',
-    price: 110.00,
-    image: '/images/drinks/sprite1l.png',
-    rating: 4.6,
-    reviews: 380,
-    stock: 42,
-    category: 'Soft Drinks',
-    branches: ['Nairobi HQ', 'Kisumu Branch'],
-    volume: '1L',
-    unit: 'single',
-    tags: ['Family Size']
-  },
-  {
-    id: '12',
-    name: 'Coca-Cola Zero Sugar 500ml',
-    brand: 'Coke',
-    description: 'All the Coca-Cola taste, zero sugar. Zero calories.',
-    price: 65.00,
-    image: '/images/drinks/zero.png',
-    rating: 4.5,
-    reviews: 760,
-    stock: 28,
-    category: 'Diet Drinks',
-    branches: ['Nairobi HQ', 'Kisumu Branch', 'Mombasa Branch'],
-    volume: '500ml',
-    unit: 'single',
-    tags: ['Sugar Free', 'Zero Calories']
-  },
-  {
-    id: '13',
-    name: 'Sprite Zero Sugar 500ml',
-    brand: 'Sprite',
-    description: 'Great Sprite taste with zero sugar and zero calories.',
-    price: 65.00,
-    image: '/images/drinks/spritezero.png',
-    rating: 4.3,
-    reviews: 420,
-    stock: 37,
-    category: 'Diet Drinks',
-    branches: ['Nairobi HQ', 'Nakuru Branch'],
-    volume: '500ml',
-    unit: 'single',
-    tags: ['Sugar Free', 'Zero Calories']
-  },
-  {
-    id: '14',
-    name: 'Coca-Cola Zero Sugar 1 Litre',
-    brand: 'Coke',
-    description: 'Zero sugar Coca-Cola in 1 litre bottle.',
-    price: 120.00,
-    image: '/images/drinks/cokezero1l.png',
-    rating: 4.4,
-    reviews: 290,
-    stock: 22,
-    category: 'Diet Drinks',
-    branches: ['Nairobi HQ', 'Mombasa Branch'],
-    volume: '1L',
-    unit: 'single',
-    tags: ['Sugar Free']
-  },
-  {
-    id: '15',
-    name: 'Fanta Pineapple 500ml',
-    brand: 'Fanta',
-    description: 'Tropical pineapple flavor. Sweet and refreshing.',
-    price: 60.00,
-    originalPrice: 65.00,
-    image: '/images/drinks/pine.webp',
-    rating: 4.4,
-    reviews: 540,
-    stock: 19,
-    category: 'Soft Drinks',
-    branches: ['Mombasa Branch', 'Eldoret Branch'],
-    volume: '500ml',
-    unit: 'single',
-    tags: ['Limited Edition', 'Special Flavor']
-  },
-  {
-    id: '16',
-    name: 'Fanta Strawberry 500ml',
-    brand: 'Fanta',
-    description: 'Sweet strawberry flavored Fanta. Delicious treat.',
-    price: 60.00,
-    image: '/images/drinks/fanta-strawberry.png',
-    rating: 4.3,
-    reviews: 380,
-    stock: 25,
-    category: 'Soft Drinks',
-    branches: ['Nairobi HQ', 'Kisumu Branch'],
-    volume: '500ml',
-    unit: 'single',
-    tags: ['Limited Edition']
-  },
-  {
-    id: '17',
-    name: 'Coca-Cola Vanilla 500ml',
-    brand: 'Coke',
-    description: 'Classic Coca-Cola with smooth vanilla twist. Limited edition.',
-    price: 70.00,
-    image: '/images/drinks/vani.png',
-    rating: 4.9,
-    reviews: 890,
-    stock: 15,
-    category: 'Special Editions',
-    branches: ['Nairobi HQ'],
-    volume: '500ml',
-    unit: 'single',
-    tags: ['Limited Edition', 'Special Flavor']
-  },
-  {
-    id: '18',
-    name: 'Coca-Cola Cherry 500ml',
-    brand: 'Coke',
-    description: 'Coca-Cola with cherry flavor. Exciting twist on the classic.',
-    price: 70.00,
-    image: '/images/drinks/coke-cherry.png',
-    rating: 4.7,
-    reviews: 510,
-    stock: 18,
-    category: 'Special Editions',
-    branches: ['Nairobi HQ', 'Mombasa Branch'],
-    volume: '500ml',
-    unit: 'single',
-    tags: ['Limited Edition']
-  },
-  {
-    id: '19',
-    name: 'Coca-Cola Energy 500ml',
-    brand: 'Coke',
-    description: 'Coca-Cola with added energy boost. Perfect for long days.',
-    price: 75.00,
-    image: '/images/drinks/coke-energy.png',
-    rating: 4.2,
-    reviews: 210,
-    stock: 30,
-    category: 'Energy Drinks',
-    branches: ['Nairobi HQ', 'Kisumu Branch'],
-    volume: '500ml',
-    unit: 'single',
-    tags: ['Energy Boost']
-  },
-  {
-    id: '20',
-    name: 'Sprite Cucumber 500ml',
-    brand: 'Sprite',
-    description: 'Sprite with refreshing cucumber flavor. Unique and delicious.',
-    price: 65.00,
-    image: '/images/drinks/sprite-cucumber.png',
-    rating: 4.1,
-    reviews: 190,
-    stock: 22,
-    category: 'Special Editions',
-    branches: ['Nairobi HQ'],
-    volume: '500ml',
-    unit: 'single',
-    tags: ['Limited Edition', 'Special Flavor']
-  }
-];
 
 const categories = [
   { id: 'all', name: 'All Products', icon: Package, count: 20 },
@@ -367,14 +48,7 @@ const categories = [
   { id: 'litre+', name: '1L+ Bottles', icon: Package, count: 6 }
 ];
 
-const branches = [
-  { id: 'all', name: 'All Branches', location: 'All Locations' },
-  { id: 'nairobi', name: 'Nairobi HQ', location: 'Nairobi Central' },
-  { id: 'kisumu', name: 'Kisumu Branch', location: 'Kisumu CBD' },
-  { id: 'mombasa', name: 'Mombasa Branch', location: 'Mombasa Old Town' },
-  { id: 'nakuru', name: 'Nakuru Branch', location: 'Nakuru CBD' },
-  { id: 'eldoret', name: 'Eldoret Branch', location: 'Eldoret Town' }
-];
+// Dummy branches removed - using API data instead
 
 const sortOptions = [
   { id: 'popular', name: 'Most Popular', icon: TrendingUp },
@@ -386,6 +60,12 @@ const sortOptions = [
 ];
 
 export default function ShopPage() {
+  // Auth and API hooks
+  const { token } = useAuthContext();
+  const { products: allProducts, isLoading: productsLoading, error: productsError, refetch: refetchProducts } = useProducts(token);
+  const { branches: apiBranches, isLoading: branchesLoading, error: branchesError, refetch: refetchBranches } = useBranches(token);
+  const { addToCart } = useCart();
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeCategory, setActiveCategory] = useState('all');
@@ -410,6 +90,36 @@ export default function ShopPage() {
 
   const sortDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Build branches options from API data
+  const branches = useMemo(
+    () => [
+      { id: 'all', name: 'All Branches', location: 'All Locations' },
+      ...apiBranches.map((b) => ({
+        id: b.id,
+        name: b.isHeadquarter ? `${b.name} (HQ)` : b.name,
+        location: b.name,
+      })),
+    ],
+    [apiBranches]
+  );
+
+  const selectedBranchName = selectedBranch === 'all'
+    ? undefined
+    : apiBranches.find((b) => b.id === selectedBranch)?.name;
+
+  const { products: branchProducts, isLoading: branchLoading } = useBranchInventory(
+    selectedBranch === 'all' ? null : selectedBranch,
+    selectedBranchName ?? undefined,
+    token
+  );
+
+  const isProductsLoading = productsLoading || branchesLoading;
+  const isBranchLoading = selectedBranch !== 'all' && branchLoading;
+  const isLoading = isProductsLoading || isBranchLoading;
+
+  const sourceProducts: ProductDisplay[] =
+    selectedBranch === 'all' ? allProducts : branchProducts;
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -422,7 +132,8 @@ export default function ShopPage() {
   }, []);
 
   // Filter products based on all active filters
-  const filteredProducts = products.filter(product => {
+  const filteredProducts = useMemo(() => {
+    return sourceProducts.filter(product => {
     // Search filter
     if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
         !product.description.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -463,18 +174,14 @@ export default function ShopPage() {
       if (filters.unit === 'single' && product.unit !== 'single') return false;
     }
 
-    // Branch filter
-    const branchToCheck = selectedBranch !== 'all' ? selectedBranch : filters.branch;
-    if (branchToCheck !== 'all') {
-      const branchMap: Record<string, string> = {
-        'nairobi': 'Nairobi HQ',
-        'kisumu': 'Kisumu Branch',
-        'mombasa': 'Mombasa Branch',
-        'nakuru': 'Nakuru Branch',
-        'eldoret': 'Eldoret Branch'
-      };
-      if (branchToCheck in branchMap && !product.branches.includes(branchMap[branchToCheck])) {
-        return false;
+    // Branch filter - only apply when using sidebar filter, not when branch is selected at top level
+    // (top level branch selection is handled by useBranchInventory)
+    if (selectedBranch === 'all' && filters.branch !== 'all') {
+      const branchName = apiBranches.find(b => b.id === filters.branch)?.name;
+      if (branchName && product.branches && product.branches.length > 0) {
+        if (!product.branches.some(b => b.toLowerCase().includes(branchName.toLowerCase()))) {
+          return false;
+        }
       }
     }
 
@@ -495,29 +202,49 @@ export default function ShopPage() {
     if (quickFilters.newArrivals && product.reviews < 100) return false;
 
     return true;
-  });
+    });
+  }, [sourceProducts, searchQuery, activeCategory, filters, quickFilters, apiBranches, selectedBranch]);
 
   // Sort products
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    switch (sortBy) {
-      case 'price-low':
-        return a.price - b.price;
-      case 'price-high':
-        return b.price - a.price;
-      case 'rating':
-        return b.rating - a.rating;
-      case 'newest':
-        return b.id.localeCompare(a.id);
-      case 'stock':
-        return b.stock - a.stock;
-      default: // popular
-        return (b.rating * b.reviews) - (a.rating * a.reviews);
-    }
-  });
+  const sortedProducts = useMemo(() => {
+    return [...filteredProducts].sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return a.price - b.price;
+        case 'price-high':
+          return b.price - a.price;
+        case 'rating':
+          return b.rating - a.rating;
+        case 'newest':
+          return b.id.localeCompare(a.id);
+        case 'stock':
+          return b.stock - a.stock;
+        default: // popular
+          return (b.rating * b.reviews) - (a.rating * a.reviews);
+      }
+    });
+  }, [filteredProducts, sortBy]);
 
   const handleAddToCart = (productId: string, quantity: number) => {
-    console.log(`Added ${quantity} of product ${productId} to cart`);
-    // Add toast notification here
+    const product = sourceProducts.find(p => p.id === productId);
+    if (!product) {
+      console.error('Product not found');
+      return;
+    }
+
+    addToCart({
+      productId: productId,
+      name: product.name,
+      brand: product.brand,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.image,
+      quantity: quantity,
+      volume: product.volume,
+      unit: product.unit,
+      branchId: selectedBranch !== 'all' ? selectedBranch : undefined,
+      branchName: selectedBranch !== 'all' ? selectedBranchName : undefined,
+    });
   };
 
   const currentBranch = branches.find(b => b.id === selectedBranch) || branches[0];
@@ -550,6 +277,8 @@ export default function ShopPage() {
     (searchQuery ? 1 : 0) +
     (selectedBranch !== 'all' ? 1 : 0);
 
+  const hasError = productsError || branchesError;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Marquee Banner at the very top */}
@@ -566,6 +295,7 @@ export default function ShopPage() {
               isOpen={true}
               onClose={() => {}}
               onFilterChange={setFilters}
+              branches={branches}
             />
           </div>
         </aside>
@@ -578,6 +308,7 @@ export default function ShopPage() {
                 isOpen={isFilterOpen}
                 onClose={() => setIsFilterOpen(false)}
                 onFilterChange={setFilters}
+                branches={branches}
               />
             </div>
           </div>
@@ -608,6 +339,7 @@ export default function ShopPage() {
                     value={selectedBranch}
                     onChange={(e) => setSelectedBranch(e.target.value)}
                     className="w-full rounded-md px-4 py-3 bg-white text-slate-900 font-medium border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer appearance-none"
+                    disabled={branchesLoading}
                   >
                     {branches.map((branch) => (
                       <option key={branch.id} value={branch.id}>
@@ -920,8 +652,40 @@ export default function ShopPage() {
             </div>
           </div>
 
+          {/* Error State */}
+          {hasError && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-red-800">
+                    {productsError ?? branchesError}
+                  </p>
+                  <p className="text-xs text-red-600 mt-1">
+                    Check your connection and try again.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  refetchProducts();
+                  refetchBranches();
+                }}
+                className="flex items-center gap-2 px-3 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg text-sm font-medium"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Retry
+              </button>
+            </div>
+          )}
+
           {/* Products Grid/List */}
-          {sortedProducts.length > 0 ? (
+          {isLoading && !hasError ? (
+            <div className="flex flex-col items-center justify-center py-24">
+              <RefreshCw className="h-12 w-12 text-sky-600 animate-spin mb-4" />
+              <p className="text-gray-600 font-medium">Loading products...</p>
+            </div>
+          ) : sortedProducts.length > 0 ? (
             viewMode === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mb-12">
                 {sortedProducts.map((product) => (
