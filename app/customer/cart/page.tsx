@@ -135,6 +135,9 @@ export default function CartPage() {
     }
   ];
 
+  // Maximum quantity constant
+  const MAX_CART_QUANTITY = 50;
+
   // Calculate totals
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const deliveryFee = deliveryOptions.find(d => d.id === selectedDelivery)?.price || 0;
@@ -495,7 +498,7 @@ export default function CartPage() {
                                   </span>
                                   <button
                                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                    disabled={item.quantity >= 50}
+                                    disabled={item.quantity >= MAX_CART_QUANTITY}
                                     className="p-2 text-slate-600 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
                                     <Plus className="h-4 w-4" />

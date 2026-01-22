@@ -228,18 +228,19 @@ export default function ShopPage() {
   const handleAddToCart = (productId: string, quantity: number) => {
     const product = sourceProducts.find(p => p.id === productId);
     if (!product) {
+      // TODO: Show user-friendly toast notification
       console.error('Product not found');
       return;
     }
 
     addToCart({
-      productId: productId,
+      productId,
       name: product.name,
       brand: product.brand,
       price: product.price,
       originalPrice: product.originalPrice,
       image: product.image,
-      quantity: quantity,
+      quantity,
       volume: product.volume,
       unit: product.unit,
       branchId: selectedBranch !== 'all' ? selectedBranch : undefined,

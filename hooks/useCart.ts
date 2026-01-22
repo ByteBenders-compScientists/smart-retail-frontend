@@ -37,10 +37,12 @@ export function useCart() {
         };
         return updatedItems;
       } else {
-        // Add new item with unique id
+        // Add new item with unique id using crypto.randomUUID for better uniqueness
         const newItem: CartItem = {
           ...item,
-          id: `${item.productId}-${item.branchId || 'default'}-${Date.now()}`,
+          id: typeof crypto !== 'undefined' && crypto.randomUUID 
+            ? crypto.randomUUID() 
+            : `${item.productId}-${item.branchId || 'default'}-${Date.now()}-${Math.random()}`,
         };
         return [...prevItems, newItem];
       }
