@@ -9,14 +9,15 @@ import {
 
 export function useProducts(token?: string | null) {
   const [products, setProducts] = useState<ProductDisplay[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProducts = useCallback(async (t?: string | null) => {
+    if (!t) return;
     setIsLoading(true);
     setError(null);
     try {
-      const data = await productService.getProducts(t ?? token);
+      const data = await productService.getProducts(t);
       setProducts(data.map(mapApiProductToDisplay));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load products');
@@ -24,11 +25,12 @@ export function useProducts(token?: string | null) {
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    if (!token) return;
+    fetchProducts(token);
+  }, [token, fetchProducts]);
 
   return { products, isLoading, error, refetch: fetchProducts };
 }

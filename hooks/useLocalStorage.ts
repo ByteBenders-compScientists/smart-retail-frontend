@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export function useLocalStorage<T>(key: string, initialValue: T) {
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [isHydrated, setIsHydrated] = useState(false);
+  const initialValueRef = useRef(initialValue);
 
   useEffect(() => {
     let cancelled = false;
@@ -12,42 +13,44 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       if (cancelled) return;
       try {
         const item = window.localStorage.getItem(key);
-        setStoredValue(item ? (JSON.parse(item) as T) : initialValue);
+        setStoredValue(item ? (JSON.parse(item) as T) : initialValueRef.current);
       } catch {
-        setStoredValue(initialValue);
+        setStoredValue(initialValueRef.current);
       }
       setIsHydrated(true);
     });
     return () => {
       cancelled = true;
     };
-  }, [key, initialValue]);
+  }, [key]);
 
   const setValue = useCallback(
     (value: T | ((prev: T) => T)) => {
-      try {
-        const toStore = value instanceof Function ? value(storedValue) : value;
-        setStoredValue(toStore);
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(key, JSON.stringify(toStore));
+      setStoredValue((prev) => {
+        const toStore = value instanceof Function ? value(prev) : value;
+        try {
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem(key, JSON.stringify(toStore));
+          }
+        } catch {
+          // ignore
         }
-      } catch {
-        // ignore
-      }
+        return toStore;
+      });
     },
-    [key, storedValue]
+    [key]
   );
 
   const removeValue = useCallback(() => {
     try {
-      setStoredValue(initialValue);
+      setStoredValue(initialValueRef.current);
       if (typeof window !== 'undefined') {
         window.localStorage.removeItem(key);
       }
     } catch {
       // ignore
     }
-  }, [key, initialValue]);
+  }, [key]);
 
   return [storedValue, setValue, removeValue, isHydrated] as const;
 }

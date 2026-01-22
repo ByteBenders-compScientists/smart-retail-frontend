@@ -94,8 +94,9 @@ export function useAuth() {
 
   useEffect(() => {
     if (!isHydrated) return;
+    if (authCheckDone) return;
     getMe();
-  }, [isHydrated, getMe]);
+  }, [isHydrated, authCheckDone]);
 
   return {
     user,

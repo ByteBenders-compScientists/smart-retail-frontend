@@ -79,7 +79,7 @@ export function mapApiProductToDisplay(p: ApiProduct): ProductDisplay {
     image: p.Image,
     rating: p.Rating,
     reviews: p.Reviews,
-    stock: 0,
+    stock: 1,
     category: p.Category,
     volume: p.Volume,
     unit: p.Unit,
