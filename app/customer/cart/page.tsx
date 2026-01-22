@@ -8,6 +8,7 @@ import Navigation from '@/components/customer/Navigation';
 import MarqueeBanner from '@/components/customer/MarqueeBanner';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useBranches } from '@/hooks/useBranches';
+import { useCart } from '@/hooks/useCart';
 import * as orderService from '@/services/orderService';
 import * as paymentService from '@/services/paymentService';
 import { ROUTES } from '@/lib/constants';
@@ -32,20 +33,6 @@ import {
   XCircle
 } from 'lucide-react';
 
-interface CartItem {
-  id: string;
-  name: string;
-  brand: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  quantity: number;
-  maxQuantity: number;
-  branch: string;
-  volume: string;
-  unit: string;
-}
-
 interface DeliveryOption {
   id: string;
   name: string;
@@ -67,8 +54,7 @@ interface PaymentMethod {
 export default function CartPage() {
   const { user, token } = useAuthContext();
   const { branches: apiBranches, isLoading: branchesLoading } = useBranches(token);
-
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { cartItems, updateQuantity, removeItem, clearCart, getCartTotal } = useCart();
 
   const [selectedBranchId, setSelectedBranchId] = useState<string>('');
   const [selectedDelivery, setSelectedDelivery] = useState('pickup');
@@ -170,32 +156,10 @@ export default function CartPage() {
     }).format(amount);
   };
 
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    
-    setCartItems(items => 
-      items.map(item => {
-        if (item.id === id) {
-          const maxQty = Math.min(newQuantity, item.maxQuantity);
-          return { ...item, quantity: maxQty };
-        }
-        return item;
-      })
-    );
-  };
-
-  const removeItem = (id: string) => {
-    setCartItems(items => items.filter(item => item.id !== id));
-  };
-
   const moveToWishlist = (id: string) => {
     // In real app, this would move item to wishlist
     console.log('Moving item to wishlist:', id);
     removeItem(id);
-  };
-
-  const clearCart = () => {
-    setCartItems([]);
   };
 
   const validateMpesaPhone = (phone: string) => {
@@ -243,7 +207,7 @@ export default function CartPage() {
       const orderData = {
         branchId: selectedBranchId,
         items: cartItems.map((item) => ({
-          productId: item.id,
+          productId: item.productId,
           productBrand: item.brand,
           quantity: item.quantity,
           price: item.price,
@@ -292,7 +256,7 @@ export default function CartPage() {
           setTimeout(() => {
             setShowMpesaModal(false);
             setOrderPlaced(true);
-            setCartItems([]);
+            clearCart();
             setIsProcessing(false);
           }, 2000);
         } else if (status.status === 'failed') {
@@ -499,7 +463,7 @@ export default function CartPage() {
                                   {item.name}
                                 </h4>
                                 <p className="text-sm text-slate-500 mb-2">
-                                  {item.volume} • Available at {item.branch}
+                                  {item.volume} • {item.branchName ? `Available at ${item.branchName}` : 'Available at all branches'}
                                 </p>
                               </div>
                               
@@ -531,7 +495,7 @@ export default function CartPage() {
                                   </span>
                                   <button
                                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                    disabled={item.quantity >= item.maxQuantity}
+                                    disabled={item.quantity >= 50}
                                     className="p-2 text-slate-600 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
                                     <Plus className="h-4 w-4" />
