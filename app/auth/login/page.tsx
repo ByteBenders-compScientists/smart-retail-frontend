@@ -3,17 +3,20 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, ArrowRight, Check } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Check, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, isAuthenticated, isHydrated, login, getDashboardPath } = useAuthContext();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Rotating images and messages
@@ -46,20 +49,40 @@ export default function LoginPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (isAuthenticated && user) {
+      router.replace(getDashboardPath(user.role));
+    }
+  }, [isHydrated, isAuthenticated, user, router, getDashboardPath]);
+
+  if (isHydrated && isAuthenticated && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
 
-    // Simulate login (dev mode - any email works)
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { user } = await login(formData);
       setShowSuccess(true);
 
-      // Navigate to dashboard after success animation
+      const dashboard = getDashboardPath(user.role);
       setTimeout(() => {
-        router.push('/customer/dashboard');
+        router.push(dashboard);
       }, 1500);
-    }, 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,6 +90,7 @@ export default function LoginPage() {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setError('');
   };
 
   return (
@@ -97,6 +121,13 @@ export default function LoginPage() {
                   Sign in to continue shopping for your favorite drinks
                 </p>
               </div>
+
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-3">
+                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-800">{error}</p>
+                </div>
+              )}
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -165,11 +196,17 @@ export default function LoginPage() {
               </form>
 
               {/* Footer */}
-              <div className="mt-8 text-center">
+              <div className="mt-8 space-y-3 text-center">
                 <p className="text-gray-600">
                   Don&apos;t have an account?{' '}
                   <Link href="/auth/register" className="text-blue-600 font-semibold hover:text-blue-700">
                     Sign up
+                  </Link>
+                </p>
+                <p className="text-sm text-gray-500">
+                  Admin?{' '}
+                  <Link href="/admin/admin-login" className="text-slate-700 font-medium hover:text-slate-900">
+                    Sign in here
                   </Link>
                 </p>
               </div>
