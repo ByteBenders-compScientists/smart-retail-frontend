@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { DollarSign, ShoppingCart, Package, TrendingUp, Users, Zap } from 'lucide-react';
+import { DollarSign, ShoppingCart, Package, TrendingUp, Users, Zap, BarChart3 } from 'lucide-react';
 import StatsCard from '@/components/admin/StatsCard';
 import SalesChart from '@/components/admin/SalesChart';
 import BranchStats from '@/components/admin/BranchStats';
@@ -136,7 +136,7 @@ export default function AdminDashboard() {
                   {currentDate} • {currentTime}
                 </p>
                 <p className="text-gray-400 mt-2">
-                  Here's what's happening with your stores today.
+                  Here&apos;s what&apos;s happening with your stores today.
                 </p>
               </div>
 
