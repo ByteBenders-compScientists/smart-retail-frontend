@@ -26,7 +26,7 @@ export default function AdminLayout({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Don't show layout on login page
-  if (pathname === '/admin/admin-login') {
+  if (pathname === '/admin') {
     return <>{children}</>;
   }
 
@@ -133,11 +133,10 @@ export default function AdminLayout({
             {/* Logo */}
             <div className="flex items-center px-6 py-6 border-b border-white/10">
               <Image
-                src="/images/light.png"
+                src="/images/logodark.png"
                 alt="Drinx Logo"
                 width={180}
                 height={36}
-                className="brightness-0 invert"
               />
             </div>
 
