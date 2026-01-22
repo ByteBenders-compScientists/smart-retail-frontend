@@ -123,7 +123,7 @@ export default function AdminDashboard() {
           />
           
           {/* Slate Overlay */}
-          <div className="absolute inset-0 bg-slate-900/90" />
+          <div className="absolute inset-0 bg-slate-800/80" />
 
           {/* Content */}
           <div className="relative px-8 py-10">

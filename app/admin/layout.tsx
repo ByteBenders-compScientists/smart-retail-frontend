@@ -55,13 +55,9 @@ export default function AdminLayout({
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            {isMobileMenuOpen ? (
-              <X className="h-6 w-6 text-gray-700" />
-            ) : (
-              <Menu className="h-6 w-6 text-gray-700" />
-            )}
+            <Menu className="h-6 w-6 text-gray-700" />
           </button>
 
           {/* Logo for Mobile */}
@@ -121,6 +117,14 @@ export default function AdminLayout({
 
           {/* Sidebar Content */}
           <div className="relative flex flex-col h-full">
+            {/* Close Button for Mobile */}
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden absolute top-4 right-4 z-50 p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+            >
+              <X className="h-5 w-5 text-white" />
+            </button>
+
             {/* Logo */}
             <div className="flex items-center px-6 py-6 border-b border-white/10">
               <Image
@@ -128,7 +132,6 @@ export default function AdminLayout({
                 alt="Drinx Logo"
                 width={180}
                 height={36}
-                
               />
             </div>
 
