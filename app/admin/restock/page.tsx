@@ -224,7 +224,7 @@ export default function RestockPage() {
                           value={restockQuantities[product.id]}
                           onChange={(e) => handleInputChange(product.id, e.target.value)}
                           placeholder="0"
-                          className="w-32 h-12 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-slate-900 focus:ring-2 focus:ring-slate-900 focus:ring-opacity-20 outline-none"
+                          className="w-32 h-12 placeholder:text-gray-500 text-gray-500 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-slate-900 focus:ring-2 focus:ring-slate-900 focus:ring-opacity-20 outline-none"
                         />
                       </div>
                     </div>

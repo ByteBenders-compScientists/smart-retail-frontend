@@ -81,7 +81,7 @@ export default function BranchStats({ branches }: BranchStatsProps) {
 
           {/* Actions */}
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <button className="w-full flex items-center justify-center space-x-2 py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+            <button className="w-full text-gray-500 flex items-center justify-center space-x-2 py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
               <Package className="h-4 w-4" />
               <span className="text-sm font-medium">View Details</span>
             </button>
