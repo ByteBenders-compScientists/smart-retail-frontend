@@ -117,7 +117,7 @@ export default function AdminLayout({
               style={{ backgroundImage: 'url(/images/drinks.jpg)' }}
             />
             {/* Slate Overlay */}
-            <div className="absolute inset-0 bg-slate-900/95" />
+            <div className="absolute inset-0 bg-slate-900/85" />
           </div>
 
           {/* Sidebar Content */}
