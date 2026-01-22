@@ -864,7 +864,7 @@ export default function CartPage() {
                 onClick={() => {
                   setShowMpesaModal(false);
                   setOrderPlaced(true);
-                  setCartItems([]);
+                  clearCart();
                 }}
                 className="w-full mt-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
               >
