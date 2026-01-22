@@ -11,7 +11,6 @@ import TopBar from '@/components/common/TopBar';
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col">
-      <TopBar/>
       <Navbar />
       
       <main className="flex-grow">

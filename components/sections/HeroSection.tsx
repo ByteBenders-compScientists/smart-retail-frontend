@@ -15,7 +15,7 @@ export default function HeroSection() {
           loop
           muted
           playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         >
           <source src="/images/bgvid.mp4" type="video/mp4" />
         </video>
