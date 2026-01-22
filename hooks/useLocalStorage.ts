@@ -7,13 +7,20 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    try {
-      const item = window.localStorage.getItem(key);
-      setStoredValue(item ? (JSON.parse(item) as T) : initialValue);
-    } catch {
-      setStoredValue(initialValue);
-    }
-    setIsHydrated(true);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      try {
+        const item = window.localStorage.getItem(key);
+        setStoredValue(item ? (JSON.parse(item) as T) : initialValue);
+      } catch {
+        setStoredValue(initialValue);
+      }
+      setIsHydrated(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [key, initialValue]);
 
   const setValue = useCallback(
