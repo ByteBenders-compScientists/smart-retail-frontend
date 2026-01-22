@@ -49,18 +49,20 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
     <div className="group sahdow-xl bg-white hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col h-full rounded-md">
       {/* Product Image Section */}
       <div className="relative h-56 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
-        {/* Stock Badge */}
-        <div className="absolute top-3 left-3 z-10">
-          {product.stock > 0 ? (
-            <span className="px-3 py-1 bg-green-500 text-white text-xs font-bold uppercase">
-              In Stock
-            </span>
-          ) : (
-            <span className="px-3 py-1 bg-red-500 text-white text-xs font-bold uppercase">
-              Out of Stock
-            </span>
-          )}
-        </div>
+        {/* Stock Badge - only when we have per-branch stock (e.g. branch inventory) */}
+        {product.branches.length > 0 && (
+          <div className="absolute top-3 left-3 z-10">
+            {product.stock > 0 ? (
+              <span className="px-3 py-1 bg-green-500 text-white text-xs font-bold uppercase">
+                In Stock
+              </span>
+            ) : (
+              <span className="px-3 py-1 bg-red-500 text-white text-xs font-bold uppercase">
+                Out of Stock
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Discount Badge */}
         {product.originalPrice && (
@@ -133,7 +135,11 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
         <div className="mb-4 pb-4 border-b border-gray-200">
           <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
             <MapPin className="h-3 w-3" />
-            <span className="font-medium">Available at {product.branches.length} branches</span>
+            <span className="font-medium">
+              {product.branches.length > 0
+                ? `Available at ${product.branches.length} branch${product.branches.length === 1 ? '' : 'es'}`
+                : 'Available at all branches'}
+            </span>
           </div>
         </div>
 
@@ -183,9 +189,9 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
         {/* Add to Cart Button */}
         <button
           onClick={handleAddToCart}
-          disabled={product.stock === 0 || isAdding}
+          disabled={(product.branches.length > 0 && product.stock === 0) || isAdding}
           className={`w-full rounded-md flex items-center justify-center py-3 px-4 font-bold transition-all duration-300 uppercase text-sm ${
-            product.stock === 0
+            product.branches.length > 0 && product.stock === 0
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : isAdding
               ? 'bg-emerald-600 text-white'
@@ -197,7 +203,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
               <Check className="h-5 w-5 mr-2" />
               Added!
             </>
-          ) : product.stock === 0 ? (
+          ) : product.branches.length > 0 && product.stock === 0 ? (
             'Out of Stock'
           ) : (
             <>

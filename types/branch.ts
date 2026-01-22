@@ -1,53 +1,35 @@
 export type BranchLocation = 'Nairobi' | 'Kisumu' | 'Mombasa' | 'Nakuru' | 'Eldoret';
 
-export interface Branch {
+/** GET /api/v1/branches and GET /api/v1/branches/:id */
+export interface ApiBranch {
+  DeletedAt: string | null;
+  ID: string;
+  Name: string;
+  IsHeadquarter: boolean;
+  Address: string;
+  Phone: string;
+  Status: string;
+  CreatedAt: string;
+  UpdatedAt: string;
+}
+
+/** UI-friendly branch */
+export interface BranchDisplay {
   id: string;
-  name: BranchLocation;
+  name: string;
   isHeadquarter: boolean;
   address: string;
   phone: string;
-  status: 'active' | 'inactive';
+  status: string;
 }
 
-export const BRANCHES: Branch[] = [
-  {
-    id: 'branch-nairobi',
-    name: 'Nairobi',
-    isHeadquarter: true,
-    address: 'Nairobi CBD, Kenya',
-    phone: '+254 700 000 001',
-    status: 'active'
-  },
-  {
-    id: 'branch-kisumu',
-    name: 'Kisumu',
-    isHeadquarter: false,
-    address: 'Kisumu City, Kenya',
-    phone: '+254 700 000 002',
-    status: 'active'
-  },
-  {
-    id: 'branch-mombasa',
-    name: 'Mombasa',
-    isHeadquarter: false,
-    address: 'Mombasa Road, Kenya',
-    phone: '+254 700 000 003',
-    status: 'active'
-  },
-  {
-    id: 'branch-nakuru',
-    name: 'Nakuru',
-    isHeadquarter: false,
-    address: 'Nakuru Town, Kenya',
-    phone: '+254 700 000 004',
-    status: 'active'
-  },
-  {
-    id: 'branch-eldoret',
-    name: 'Eldoret',
-    isHeadquarter: false,
-    address: 'Eldoret Town, Kenya',
-    phone: '+254 700 000 005',
-    status: 'active'
-  }
-];
+export function mapApiBranchToDisplay(b: ApiBranch): BranchDisplay {
+  return {
+    id: b.ID,
+    name: b.Name,
+    isHeadquarter: b.IsHeadquarter,
+    address: b.Address,
+    phone: b.Phone,
+    status: b.Status,
+  };
+}

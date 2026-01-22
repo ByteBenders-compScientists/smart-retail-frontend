@@ -4,16 +4,32 @@
 import { useState } from 'react';
 import { Filter, X, Sliders, Check, Star, TrendingUp } from 'lucide-react';
 
+export interface BranchOption {
+  id: string;
+  name: string;
+  location?: string;
+}
+
 interface FilterSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onFilterChange: (filters: any) => void;
+  branches?: BranchOption[];
 }
 
-export default function FilterSidebar({ isOpen, onClose, onFilterChange }: FilterSidebarProps) {
+const defaultBranches: BranchOption[] = [
+  { id: 'all', name: 'All Branches' },
+  { id: 'nairobi', name: 'Nairobi HQ' },
+  { id: 'kisumu', name: 'Kisumu Branch' },
+  { id: 'mombasa', name: 'Mombasa Branch' },
+  { id: 'nakuru', name: 'Nakuru Branch' },
+  { id: 'eldoret', name: 'Eldoret Branch' },
+];
+
+export default function FilterSidebar({ isOpen, onClose, onFilterChange, branches: branchesProp }: FilterSidebarProps) {
   const [filters, setFilters] = useState({
     categories: ['Coke', 'Fanta', 'Sprite'],
-    priceRange: { min: 0, max: 100 },
+    priceRange: { min: 0, max: 2000 },
     sortBy: 'popular',
     inStock: true,
     branch: 'all'
@@ -33,14 +49,7 @@ export default function FilterSidebar({ isOpen, onClose, onFilterChange }: Filte
     { id: 'newest', name: 'Newest First' }
   ];
 
-  const branches = [
-    { id: 'all', name: 'All Branches' },
-    { id: 'nairobi', name: 'Nairobi HQ' },
-    { id: 'kisumu', name: 'Kisumu Branch' },
-    { id: 'mombasa', name: 'Mombasa Branch' },
-    { id: 'nakuru', name: 'Nakuru Branch' },
-    { id: 'eldoret', name: 'Eldoret Branch' }
-  ];
+  const branches = branchesProp ?? defaultBranches;
 
   const handleCategoryToggle = (category: string) => {
     setFilters(prev => {
@@ -80,7 +89,7 @@ export default function FilterSidebar({ isOpen, onClose, onFilterChange }: Filte
   const clearFilters = () => {
     const defaultFilters = {
       categories: ['Coke', 'Fanta', 'Sprite'],
-      priceRange: { min: 0, max: 100 },
+      priceRange: { min: 0, max: 2000 },
       sortBy: 'popular',
       inStock: true,
       branch: 'all'
