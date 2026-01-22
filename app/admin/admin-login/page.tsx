@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, ArrowRight, Check, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Check, Shield, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import { useAuthContext } from '@/contexts/AuthContext';
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
   const { user, isAuthenticated, isHydrated, login, getDashboardPath } = useAuthContext();
   const [formData, setFormData] = useState({
@@ -23,21 +23,21 @@ export default function LoginPage() {
   const slides = [
     {
       image: '/images/drinks.jpg',
-      gradient: 'from-emerald-600/30 via-emerald-700/50 to-emerald-900/80',
-      title: 'Refresh Your Day',
-      subtitle: 'Quality drinks at your fingertips',
+      gradient: 'from-slate-800/60 via-slate-900/70 to-slate-950/90',
+      title: 'Admin Control Center',
+      subtitle: 'Manage all branches from one place',
     },
     {
       image: '/images/drinks2.jpg',
-      gradient: 'from-emerald-600/30 via-emerald-700/50 to-emerald-900/80',
-      title: 'Same Price, All Branches',
-      subtitle: 'Shop from Nairobi to Eldoret',
+      gradient: 'from-slate-800/60 via-slate-900/70 to-slate-950/90',
+      title: 'Real-Time Analytics',
+      subtitle: 'Monitor sales across Kenya',
     },
     {
       image: '/images/drinks3.jpg',
-      gradient: 'from-emerald-600/30 via-emerald-700/50 to-emerald-900/80',
-      title: 'Quick & Easy Checkout',
-      subtitle: 'Pay securely with M-Pesa',
+      gradient: 'from-slate-800/60 via-slate-900/70 to-slate-950/90',
+      title: 'Inventory Management',
+      subtitle: 'Restock from headquarters',
     },
   ];
 
@@ -48,22 +48,6 @@ export default function LoginPage() {
     }, 4000);
     return () => clearInterval(interval);
   }, []);
-
-  // Redirect if already logged in
-  useEffect(() => {
-    if (!isHydrated) return;
-    if (isAuthenticated && user) {
-      router.replace(getDashboardPath(user.role));
-    }
-  }, [isHydrated, isAuthenticated, user, router, getDashboardPath]);
-
-  if (isHydrated && isAuthenticated && user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +63,7 @@ export default function LoginPage() {
         router.push(dashboard);
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
+      setError(err instanceof Error ? err.message : 'Invalid credentials. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -92,6 +76,14 @@ export default function LoginPage() {
     });
     setError('');
   };
+
+  if (isHydrated && isAuthenticated && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-8 h-8 border-4 border-slate-900 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -112,16 +104,23 @@ export default function LoginPage() {
                 </Link>
               </div>
 
+              {/* Admin Badge */}
+              <div className="mb-8 inline-flex items-center space-x-2 px-4 py-2 bg-slate-900 rounded-lg">
+                <Shield className="h-5 w-5 text-white" />
+                <span className="text-white font-semibold">Admin Access</span>
+              </div>
+
               {/* Header */}
               <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  Welcome Back
+                  Administrator Login
                 </h1>
                 <p className="text-gray-600">
-                  Sign in to continue shopping for your favorite drinks
+                  Sign in to access the admin control panel
                 </p>
               </div>
 
+              {/* Error Alert */}
               {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-3">
                   <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -134,7 +133,7 @@ export default function LoginPage() {
                 {/* Email */}
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
+                    Admin Email
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -147,8 +146,8 @@ export default function LoginPage() {
                       required
                       value={formData.email}
                       onChange={handleChange}
-                      className="block w-full placeholder:text-gray-400 outline-0 text-gray-900 pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                      placeholder="you@example.com"
+                      className="block w-full placeholder:text-gray-400 outline-0 text-gray-900 pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
+                      placeholder="admin@example.com"
                     />
                   </div>
                 </div>
@@ -169,7 +168,7 @@ export default function LoginPage() {
                       required
                       value={formData.password}
                       onChange={handleChange}
-                      className="block w-full placeholder:text-gray-400 outline-0 text-gray-900 pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="block w-full placeholder:text-gray-400 outline-0 text-gray-900 pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
                       placeholder="••••••••"
                     />
                   </div>
@@ -179,16 +178,16 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full flex items-center justify-center py-3 px-4 bg-blue-900 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center py-3 px-4 bg-slate-900 text-white font-semibold rounded-lg hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <div className="flex items-center space-x-2">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Signing in...</span>
+                      <span>Authenticating...</span>
                     </div>
                   ) : (
                     <>
-                      <span>Sign In</span>
+                      <span>Sign In as Admin</span>
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </>
                   )}
@@ -196,19 +195,16 @@ export default function LoginPage() {
               </form>
 
               {/* Footer */}
-              <div className="mt-8 space-y-3 text-center">
-                <p className="text-gray-600">
-                  Don&apos;t have an account?{' '}
-                  <Link href="/auth/register" className="text-blue-600 font-semibold hover:text-blue-700">
-                    Sign up
-                  </Link>
-                </p>
-                <p className="text-sm text-gray-500">
-                  Admin?{' '}
-                  <Link href="/admin/admin-login" className="text-slate-700 font-medium hover:text-slate-900">
+              <div className="mt-6 space-y-3 text-center">
+                <p className="text-sm text-gray-600">
+                  Customer?{' '}
+                  <Link href="/auth/login" className="text-sky-600 font-medium hover:text-sky-700">
                     Sign in here
                   </Link>
                 </p>
+                <Link href="/" className="block text-sm text-gray-600 hover:text-gray-900">
+                  ← Back to homepage
+                </Link>
               </div>
             </>
           ) : (
@@ -218,22 +214,22 @@ export default function LoginPage() {
                 <Check className="h-10 w-10 text-green-600" />
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Welcome Back!
+                Access Granted!
               </h2>
               <p className="text-gray-600 mb-4">
-                Login successful. Redirecting to your dashboard...
+                Redirecting to admin dashboard...
               </p>
               <div className="flex justify-center">
-                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-8 h-8 border-4 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* RIGHT SIDE - ROTATING IMAGES WITH REDUCED SPACING */}
+      {/* RIGHT SIDE - ROTATING IMAGES */}
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-white p-6">
-        <div className="relative w-full h-full  ">
+        <div className="relative w-full h-full">
           {slides.map((slide, index) => (
             <div
               key={index}
@@ -252,6 +248,9 @@ export default function LoginPage() {
 
               {/* Content */}
               <div className="relative h-full flex flex-col items-center justify-center text-white p-12">
+                <div className="mb-6">
+                  <Shield className="h-16 w-16 text-white opacity-90" />
+                </div>
                 <h2 className="text-4xl md:text-5xl font-bold mb-4 text-center drop-shadow-lg">
                   {slide.title}
                 </h2>

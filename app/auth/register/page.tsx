@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Phone, Lock, ArrowRight, Check } from 'lucide-react';
+import { User, Mail, Phone, Lock, ArrowRight, Check, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { user, isAuthenticated, isHydrated, register, getDashboardPath } = useAuthContext();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,6 +19,7 @@ export default function RegisterPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Rotating images and messages
@@ -46,22 +49,38 @@ const slides = [
       setCurrentImageIndex((prev) => (prev + 1) % slides.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [slides.length]);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (isAuthenticated && user) {
+      router.replace(getDashboardPath(user.role));
+    }
+  }, [isHydrated, isAuthenticated, user, router, getDashboardPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
     setIsLoading(true);
+    setError('');
 
-    // Simulate registration (dev mode - any data works)
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { user } = await register(formData);
       setShowSuccess(true);
 
-      // Navigate to login after success animation
+      const dashboard = getDashboardPath(user.role);
       setTimeout(() => {
-        router.push('/auth/login');
-      }, 2000);
-    }, 1000);
+        router.push(dashboard);
+      }, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +88,16 @@ const slides = [
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setError('');
   };
+
+  if (isHydrated && isAuthenticated && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -148,6 +176,13 @@ const slides = [
                 </p>
               </div>
 
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-3">
+                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-800">{error}</p>
+                </div>
+              )}
+
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Name */}
@@ -193,6 +228,29 @@ const slides = [
                     />
                   </div>
                 </div>
+
+                {/* Phone */}
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Phone className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      required
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="block w-full placeholder:text-gray-400 outline-0 text-gray-900 pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="+254712345678"
+                    />
+                  </div>
+                </div>
+
                 {/* Password */}
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
@@ -277,7 +335,7 @@ const slides = [
                 Account Created!
               </h2>
               <p className="text-gray-600 mb-4">
-                Your account has been successfully created. Redirecting to login...
+                Your account has been successfully created. Redirecting to your dashboard...
               </p>
               <div className="flex justify-center">
                 <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>

@@ -4,21 +4,24 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  Home, 
-  ShoppingBag, 
-  ShoppingCart, 
-  History, 
-  User, 
+import {
+  Home,
+  ShoppingBag,
+  ShoppingCart,
+  History,
+  User,
   LogOut,
   MapPin,
   Menu,
   X,
   Bell,
-  ChevronDown
+  ChevronDown,
 } from 'lucide-react';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { ROUTES } from '@/lib/constants';
 
 export default function Navigation() {
+  const { user, logout } = useAuthContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState('Nairobi HQ');
@@ -49,8 +52,9 @@ export default function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleLogout = () => {
-    router.push('/auth/login');
+  const handleLogout = async () => {
+    await logout();
+    router.push(ROUTES.LOGIN);
   };
 
   return (

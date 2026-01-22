@@ -1,20 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { 
-  LayoutDashboard, 
-  Package, 
-  BarChart3, 
+import {
+  LayoutDashboard,
+  Package,
+  BarChart3,
   LogOut,
   Menu,
   X,
   Bell,
   User,
-  Settings
+  Settings,
 } from 'lucide-react';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { ROUTES } from '@/lib/constants';
+
+const ADMIN_LOGIN_PATH = '/admin/admin-login';
 
 export default function AdminLayout({
   children,
@@ -23,11 +27,32 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, isAuthenticated, isHydrated, authCheckDone, logout, getDashboardPath } = useAuthContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isAdminLoginPage = pathname === ADMIN_LOGIN_PATH;
 
-  // Don't show layout on login page
-  if (pathname === '/admin') {
+  useEffect(() => {
+    if (!isHydrated || !authCheckDone || isAdminLoginPage) return;
+    if (!isAuthenticated || !user) {
+      router.replace(ROUTES.ADMIN_LOGIN);
+      return;
+    }
+    if (user.role !== 'admin') {
+      router.replace(getDashboardPath(user.role));
+      return;
+    }
+  }, [isHydrated, authCheckDone, isAuthenticated, user, isAdminLoginPage, router, getDashboardPath]);
+
+  if (isAdminLoginPage) {
     return <>{children}</>;
+  }
+
+  if (!authCheckDone || !isHydrated || !isAuthenticated || user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-8 h-8 border-4 border-slate-900 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   const navigation = [
@@ -48,21 +73,26 @@ export default function AdminLayout({
     },
   ];
 
-  const handleLogout = () => {
-    router.push('/admin/admin-login');
+  const handleLogout = async () => {
+    await logout();
+    router.push(ROUTES.ADMIN_LOGIN);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Header Bar */}
-      <div className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50 lg:pl-72">
+      <div className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50 lg:pl-64">
         <div className="h-full px-4 flex items-center justify-between">
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors"
           >
-            <Menu className="h-6 w-6 text-gray-700" />
+            {isMobileMenuOpen ? (
+              <X className="h-6 w-6 text-gray-700" />
+            ) : (
+              <Menu className="h-6 w-6 text-gray-700" />
+            )}
           </button>
 
           {/* Logo for Mobile */}
@@ -91,8 +121,8 @@ export default function AdminLayout({
             {/* Admin Profile */}
             <div className="flex items-center space-x-3 pl-4 border-l border-gray-200">
               <div className="hidden sm:block text-right">
-                <p className="text-sm font-semibold text-gray-900">Admin</p>
-                <p className="text-xs text-gray-500">Nairobi HQ</p>
+                <p className="text-sm font-semibold text-gray-900">{user?.name ?? 'Admin'}</p>
+                <p className="text-xs text-gray-500">{user?.email ?? 'Nairobi HQ'}</p>
               </div>
               <div className="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center">
                 <User className="h-5 w-5 text-white" />
@@ -102,106 +132,96 @@ export default function AdminLayout({
         </div>
       </div>
 
-      {/* Sidebar Container with Padding (Desktop Only) */}
+      {/* Sidebar with Background Image */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 lg:px-4 lg:py-4 lg:pt-20 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Sidebar with Background Image */}
-        <div className="relative h-full lg:rounded-2xl overflow-hidden shadow-xl">
-          {/* Background Image */}
-          <div className="absolute inset-0">
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: 'url(/images/drinks.jpg)' }}
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: 'url(/images/drinks.jpg)' }}
+          />
+          {/* Slate Overlay */}
+          <div className="absolute inset-0 bg-slate-900/95" />
+        </div>
+
+        {/* Sidebar Content */}
+        <div className="relative flex flex-col h-full">
+          {/* Logo */}
+          <div className="flex items-center px-6 py-6 border-b border-white/10">
+            <Image
+              src="/images/light.png"
+              alt="Drinx Logo"
+              width={180}
+              height={36}
+              className="brightness-0 invert"
             />
-            {/* Slate Overlay */}
-            <div className="absolute inset-0 bg-slate-900/85" />
           </div>
 
-          {/* Sidebar Content */}
-          <div className="relative flex flex-col h-full">
-            {/* Close Button for Mobile */}
+          {/* Admin Badge */}
+          <div className="px-6 py-4 border-b border-white/10">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
+                <User className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">{user?.name ?? 'Administrator'}</p>
+                <p className="text-xs text-gray-300 truncate max-w-[140px]">{user?.email ?? 'Nairobi HQ'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
+              
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+                    isActive
+                      ? 'bg-white text-slate-900'
+                      : 'text-gray-200 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Quick Stats */}
+          <div className="px-6 py-4 border-t border-white/10">
+            <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+              <p className="text-xs text-gray-300 mb-2">Total Revenue Today</p>
+              <p className="text-2xl font-bold text-white">KSh 45,000</p>
+              <p className="text-xs text-green-400 mt-1">↑ 12.5% from yesterday</p>
+            </div>
+          </div>
+
+          {/* Logout */}
+          <div className="p-4 border-t border-white/10">
             <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="lg:hidden absolute top-4 right-4 z-50 p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+              onClick={handleLogout}
+              className="flex items-center space-x-3 px-4 py-3 w-full rounded-lg text-gray-200 hover:bg-red-500/20 hover:text-red-400 transition-all"
             >
-              <X className="h-5 w-5 text-white" />
+              <LogOut className="h-5 w-5" />
+              <span className="font-medium">Logout</span>
             </button>
-
-            {/* Logo */}
-            <div className="flex items-center px-6 py-6 border-b border-white/10">
-              <Image
-                src="/images/logodark.png"
-                alt="Drinx Logo"
-                width={180}
-                height={36}
-              />
-            </div>
-
-            {/* Admin Badge */}
-            <div className="px-6 py-4 border-b border-white/10">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
-                  <User className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-white">Administrator</p>
-                  <p className="text-xs text-gray-300">Nairobi HQ</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Navigation */}
-            <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href;
-                const Icon = item.icon;
-                
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-                      isActive
-                        ? 'bg-white text-slate-900'
-                        : 'text-gray-200 hover:bg-white/10 hover:text-white'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span className="font-medium">{item.name}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-
-            {/* Quick Stats */}
-            <div className="px-6 py-4 border-t border-white/10">
-              <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-                <p className="text-xs text-gray-300 mb-2">Total Revenue Today</p>
-                <p className="text-2xl font-bold text-white">KSh 45,000</p>
-                <p className="text-xs text-green-400 mt-1">↑ 12.5% from yesterday</p>
-              </div>
-            </div>
-
-            {/* Logout */}
-            <div className="p-4 border-t border-white/10">
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-3 px-4 py-3 w-full rounded-lg text-gray-200 hover:bg-red-500/20 hover:text-red-400 transition-all"
-              >
-                <LogOut className="h-5 w-5" />
-                <span className="font-medium">Logout</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="lg:pl-72 pt-16">
+      <div className="lg:pl-64 pt-16">
         {children}
       </div>
 

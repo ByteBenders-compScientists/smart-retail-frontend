@@ -1,11 +1,12 @@
 export const APP_NAME = 'Smart-Retail';
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export const ROUTES = {
   HOME: '/',
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
+  ADMIN_LOGIN: '/admin/admin-login',
   CUSTOMER_DASHBOARD: '/customer/dashboard',
   CUSTOMER_SHOP: '/customer/shop',
   CUSTOMER_CART: '/customer/cart',
