@@ -8,6 +8,7 @@ import Navigation from '@/components/customer/Navigation';
 import MarqueeBanner from '@/components/customer/MarqueeBanner';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useOrders } from '@/hooks/useOrders';
+import { useBranches } from '@/hooks/useBranches';
 import type { OrderDisplay } from '@/types/order';
 import { ROUTES } from '@/lib/constants';
 import { 
@@ -103,6 +104,7 @@ function mapOrderDisplayToUI(order: OrderDisplay): Order {
 export default function OrdersPage() {
   const { token } = useAuthContext();
   const { orders: apiOrders, isLoading, error, refetch } = useOrders(token);
+  const { branches: apiBranches } = useBranches(token);
 
   const orders = useMemo(() => apiOrders.map(mapOrderDisplayToUI), [apiOrders]);
 
@@ -125,14 +127,17 @@ export default function OrdersPage() {
     { id: 'cancelled', name: 'Cancelled', icon: XCircle, count: orders.filter(o => o.status === 'cancelled').length }
   ];
 
-  const branchOptions = [
-    { id: 'all', name: 'All Branches' },
-    { id: 'nairobi', name: 'Nairobi HQ' },
-    { id: 'kisumu', name: 'Kisumu Branch' },
-    { id: 'mombasa', name: 'Mombasa Branch' },
-    { id: 'nakuru', name: 'Nakuru Branch' },
-    { id: 'eldoret', name: 'Eldoret Branch' }
-  ];
+  // Build branch options from API data
+  const branchOptions = useMemo(
+    () => [
+      { id: 'all', name: 'All Branches' },
+      ...apiBranches.map((b) => ({
+        id: b.id,
+        name: b.isHeadquarter ? `${b.name} (HQ)` : b.name,
+      })),
+    ],
+    [apiBranches]
+  );
 
   const dateOptions = [
     { id: 'all', name: 'All Time' },
@@ -226,15 +231,10 @@ export default function OrdersPage() {
 
     // Branch filter
     if (branchFilter !== 'all') {
-      const branchMap: Record<string, string[]> = {
-        'nairobi': ['Nairobi', 'Nairobi HQ'],
-        'kisumu': ['Kisumu', 'Kisumu Branch'],
-        'mombasa': ['Mombasa', 'Mombasa Branch'],
-        'nakuru': ['Nakuru', 'Nakuru Branch'],
-        'eldoret': ['Eldoret', 'Eldoret Branch']
-      };
-      const branchNames = branchMap[branchFilter] ?? [];
-      result = result.filter(order => branchNames.some(name => order.branch.includes(name)));
+      const selectedBranch = apiBranches.find(b => b.id === branchFilter);
+      if (selectedBranch) {
+        result = result.filter(order => order.branch.includes(selectedBranch.name));
+      }
     }
 
     // Date filter
@@ -265,7 +265,7 @@ export default function OrdersPage() {
     }
 
     setFilteredOrders(result);
-  }, [searchQuery, statusFilter, branchFilter, dateFilter, orders]);
+  }, [searchQuery, statusFilter, branchFilter, dateFilter, orders, apiBranches]);
 
   const toggleOrderExpansion = (orderId: string) => {
     setExpandedOrder(expandedOrder === orderId ? null : orderId);
