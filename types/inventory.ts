@@ -44,7 +44,6 @@ export interface ApiRestockUser {
   Name: string;
   Email: string;
   Phone: string;
-  Password: string;
   Role: string;
   CreatedAt: string;
   UpdatedAt: string;
