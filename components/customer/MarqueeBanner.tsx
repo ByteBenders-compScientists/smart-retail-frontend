@@ -118,11 +118,17 @@ export default function MarqueeBanner() {
         }
         
         .animate-marquee-smooth {
-          animation: marquee-smooth 50s linear infinite;
+          animation: marquee-smooth 30s linear infinite;
         }
         
         .animate-marquee-smooth:hover {
           animation-play-state: paused;
+        }
+
+        @media (min-width: 768px) {
+          .animate-marquee-smooth {
+            animation: marquee-smooth 50s linear infinite;
+          }
         }
 
         @media (prefers-reduced-motion: reduce) {
