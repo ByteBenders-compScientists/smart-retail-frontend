@@ -1,66 +1,73 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapPin, Package, AlertCircle, CheckCircle, TrendingDown, TrendingUp } from 'lucide-react';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { getBranches } from '@/services/branchService';
+import { getInventoryByBranch, restockBranch } from '@/services/adminService';
+import type { ApiBranch } from '@/types/branch';
+import type { ApiInventoryItem } from '@/types/inventory';
 
 export default function RestockPage() {
-  const [selectedBranch, setSelectedBranch] = useState('kisumu');
-  const [restockQuantities, setRestockQuantities] = useState<Record<string, string>>({
-    'prod-cola': '',
-    'prod-fanta': '',
-    'prod-sprite': '',
-    'prod-pepsi': '',
-    'prod-dew': '',
-    'prod-mirinda': ''
-  });
+  const { token } = useAuthContext();
+  const [branches, setBranches] = useState<ApiBranch[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<string>('');
+  const [inventory, setInventory] = useState<ApiInventoryItem[]>([]);
+  const [restockQuantities, setRestockQuantities] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const branches = [
-    { id: 'nairobi', name: 'Nairobi HQ', disabled: true },
-    { id: 'kisumu', name: 'Kisumu' },
-    { id: 'mombasa', name: 'Mombasa' },
-    { id: 'nakuru', name: 'Nakuru' },
-    { id: 'eldoret', name: 'Eldoret' },
-  ];
+  // Fetch branches on mount
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedBranches = await getBranches(token);
+        setBranches(fetchedBranches);
+        
+        // Auto-select first non-headquarters branch
+        const nonHqBranch = fetchedBranches.find(b => !b.IsHeadquarter);
+        if (nonHqBranch) {
+          setSelectedBranch(nonHqBranch.ID);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load branches');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  // Mock stock data per branch
-  const branchInventory: Record<string, any> = {
-    kisumu: [
-      { id: 'prod-cola', name: 'Coca-Cola', currentStock: 45, unit: 'Crates' },
-      { id: 'prod-fanta', name: 'Fanta Orange', currentStock: 12, unit: 'Crates' },
-      { id: 'prod-sprite', name: 'Sprite', currentStock: 67, unit: 'Crates' },
-      { id: 'prod-pepsi', name: 'Pepsi', currentStock: 28, unit: 'Crates' },
-      { id: 'prod-dew', name: 'Mountain Dew', currentStock: 15, unit: 'Crates' },
-      { id: 'prod-mirinda', name: 'Mirinda', currentStock: 33, unit: 'Crates' },
-    ],
-    mombasa: [
-      { id: 'prod-cola', name: 'Coca-Cola', currentStock: 38, unit: 'Crates' },
-      { id: 'prod-fanta', name: 'Fanta Orange', currentStock: 55, unit: 'Crates' },
-      { id: 'prod-sprite', name: 'Sprite', currentStock: 42, unit: 'Crates' },
-      { id: 'prod-pepsi', name: 'Pepsi', currentStock: 9, unit: 'Crates' },
-      { id: 'prod-dew', name: 'Mountain Dew', currentStock: 31, unit: 'Crates' },
-      { id: 'prod-mirinda', name: 'Mirinda', currentStock: 18, unit: 'Crates' },
-    ],
-    nakuru: [
-      { id: 'prod-cola', name: 'Coca-Cola', currentStock: 52, unit: 'Crates' },
-      { id: 'prod-fanta', name: 'Fanta Orange', currentStock: 28, unit: 'Crates' },
-      { id: 'prod-sprite', name: 'Sprite', currentStock: 35, unit: 'Crates' },
-      { id: 'prod-pepsi', name: 'Pepsi', currentStock: 41, unit: 'Crates' },
-      { id: 'prod-dew', name: 'Mountain Dew', currentStock: 7, unit: 'Crates' },
-      { id: 'prod-mirinda', name: 'Mirinda', currentStock: 44, unit: 'Crates' },
-    ],
-    eldoret: [
-      { id: 'prod-cola', name: 'Coca-Cola', currentStock: 19, unit: 'Crates' },
-      { id: 'prod-fanta', name: 'Fanta Orange', currentStock: 36, unit: 'Crates' },
-      { id: 'prod-sprite', name: 'Sprite', currentStock: 23, unit: 'Crates' },
-      { id: 'prod-pepsi', name: 'Pepsi', currentStock: 50, unit: 'Crates' },
-      { id: 'prod-dew', name: 'Mountain Dew', currentStock: 29, unit: 'Crates' },
-      { id: 'prod-mirinda', name: 'Mirinda', currentStock: 11, unit: 'Crates' },
-    ],
-  };
+    fetchBranches();
+  }, [token]);
 
-  const currentBranch = branches.find(b => b.id === selectedBranch);
-  const currentInventory = branchInventory[selectedBranch] || [];
+  // Fetch inventory when branch changes
+  useEffect(() => {
+    if (!selectedBranch) return;
+
+    const fetchInventory = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await getInventoryByBranch(selectedBranch, token);
+        setInventory(response.inventory);
+        
+        // Reset restock quantities for new inventory
+        const newQuantities: Record<string, string> = {};
+        response.inventory.forEach(item => {
+          newQuantities[item.ProductID] = '';
+        });
+        setRestockQuantities(newQuantities);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load inventory');
+        setInventory([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInventory();
+  }, [selectedBranch, token]);
 
   const handleInputChange = (productId: string, value: string) => {
     // Only allow numbers
@@ -72,35 +79,51 @@ export default function RestockPage() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const restockData = Object.entries(restockQuantities)
-      .filter(([_, qty]) => qty !== '' && parseInt(qty) > 0)
+      .filter(([, qty]) => qty !== '' && parseInt(qty) > 0)
       .map(([productId, quantity]) => ({
         productId,
         quantity: parseInt(quantity)
       }));
     
     if (restockData.length === 0) {
-      alert('Please enter quantities to restock');
+      setError('Please enter quantities to restock');
       return;
     }
 
-    console.log('Restocking Branch:', selectedBranch);
-    console.log('Restock Data:', restockData);
-    
-    setShowSuccess(true);
-    
-    // Reset form
-    setRestockQuantities({
-      'prod-cola': '',
-      'prod-fanta': '',
-      'prod-sprite': '',
-      'prod-pepsi': '',
-      'prod-dew': '',
-      'prod-mirinda': ''
-    });
-    
-    setTimeout(() => setShowSuccess(false), 3000);
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Submit each restock request
+      for (const item of restockData) {
+        await restockBranch({
+          branchId: selectedBranch,
+          productId: item.productId,
+          quantity: item.quantity
+        }, token);
+      }
+      
+      setShowSuccess(true);
+      
+      // Refresh inventory after successful restock
+      const response = await getInventoryByBranch(selectedBranch, token);
+      setInventory(response.inventory);
+      
+      // Reset form
+      const newQuantities: Record<string, string> = {};
+      response.inventory.forEach(item => {
+        newQuantities[item.ProductID] = '';
+      });
+      setRestockQuantities(newQuantities);
+      
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to restock');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getStockStatus = (stock: number) => {
@@ -112,6 +135,20 @@ export default function RestockPage() {
   const totalToRestock = Object.values(restockQuantities)
     .filter(qty => qty !== '')
     .reduce((sum, qty) => sum + parseInt(qty), 0);
+
+  const currentBranch = branches.find(b => b.ID === selectedBranch);
+  const headquartersBranch = branches.find(b => b.IsHeadquarter);
+
+  if (isLoading && branches.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Package className="h-12 w-12 text-gray-400 mx-auto mb-4 animate-pulse" />
+          <p className="text-gray-600">Loading branches and inventory...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -129,8 +166,16 @@ export default function RestockPage() {
           <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center space-x-3">
             <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
             <p className="text-sm text-green-800 font-medium">
-              Restock order submitted successfully! Inventory will be transferred from Nairobi HQ.
+              Restock order submitted successfully! Inventory will be transferred from {headquartersBranch?.Name || 'headquarters'}.
             </p>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center space-x-3">
+            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+            <p className="text-sm text-red-800 font-medium">{error}</p>
           </div>
         )}
 
@@ -142,24 +187,24 @@ export default function RestockPage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {branches.map((branch) => (
               <button
-                key={branch.id}
-                onClick={() => !branch.disabled && setSelectedBranch(branch.id)}
-                disabled={branch.disabled}
+                key={branch.ID}
+                onClick={() => !branch.IsHeadquarter && setSelectedBranch(branch.ID)}
+                disabled={branch.IsHeadquarter}
                 className={`flex items-center justify-center space-x-2 py-3 px-4 rounded-lg border-2 transition-all ${
-                  branch.disabled
+                  branch.IsHeadquarter
                     ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : selectedBranch === branch.id
+                    : selectedBranch === branch.ID
                     ? 'border-slate-900 bg-slate-900 text-white'
                     : 'border-gray-200 hover:border-gray-300 text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <MapPin className="h-4 w-4" />
-                <span className="font-medium text-sm">{branch.name}</span>
+                <span className="font-medium text-sm">{branch.Name}</span>
               </button>
             ))}
           </div>
           <p className="text-xs text-gray-500 mt-3">
-            Note: Nairobi HQ is the source of all inventory and cannot be restocked
+            Note: {headquartersBranch?.Name || 'Headquarters'} is the source of all inventory and cannot be restocked
           </p>
         </div>
 
@@ -170,7 +215,7 @@ export default function RestockPage() {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white flex items-center space-x-2">
                 <Package className="h-5 w-5" />
-                <span>Current Stock Levels - {currentBranch?.name}</span>
+                <span>Current Stock Levels - {currentBranch?.Name}</span>
               </h2>
               {totalToRestock > 0 && (
                 <span className="text-sm text-gray-300">
@@ -182,56 +227,69 @@ export default function RestockPage() {
 
           {/* Product List */}
           <div className="divide-y divide-gray-200">
-            {currentInventory.map((product: any) => {
-              const status = getStockStatus(product.currentStock);
-              const StatusIcon = status.icon;
-              const restockQty = restockQuantities[product.id];
-              const newStock = restockQty ? product.currentStock + parseInt(restockQty) : product.currentStock;
-              
-              return (
-                <div key={product.id} className="p-6 hover:bg-gray-50 transition-colors">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                    {/* Product Info */}
-                    <div className="flex-1">
-                      <h3 className="text-base font-semibold text-gray-900 mb-2">{product.name}</h3>
-                      <div className="flex items-center gap-4 flex-wrap">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm text-gray-600">Current Stock:</span>
-                          <span className="text-base font-bold text-gray-900">{product.currentStock} {product.unit}</span>
-                        </div>
-                        <span className={`text-xs px-3 py-1 rounded-full font-medium flex items-center space-x-1 ${status.color}`}>
-                          <StatusIcon className="h-3 w-3" />
-                          <span>{status.label}</span>
-                        </span>
-                        {restockQty && parseInt(restockQty) > 0 && (
-                          <div className="flex items-center space-x-2 text-sm">
-                            <span className="text-gray-500">→</span>
-                            <span className="text-green-700 font-semibold">New: {newStock} {product.unit}</span>
-                            <span className="text-xs text-green-600">(+{restockQty})</span>
+            {isLoading ? (
+              <div className="p-12 text-center">
+                <Package className="h-12 w-12 text-gray-400 mx-auto mb-4 animate-pulse" />
+                <p className="text-gray-600">Loading inventory...</p>
+              </div>
+            ) : inventory.length === 0 ? (
+              <div className="p-12 text-center">
+                <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">No inventory found for this branch</p>
+              </div>
+            ) : (
+              inventory.map((item: ApiInventoryItem) => {
+                const status = getStockStatus(item.Quantity);
+                const StatusIcon = status.icon;
+                const restockQty = restockQuantities[item.ProductID];
+                const newStock = restockQty ? item.Quantity + parseInt(restockQty) : item.Quantity;
+                
+                return (
+                  <div key={item.ID} className="p-6 hover:bg-gray-50 transition-colors">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                      {/* Product Info */}
+                      <div className="flex-1">
+                        <h3 className="text-base font-semibold text-gray-900 mb-2">{item.Product.Name}</h3>
+                        <div className="flex items-center gap-4 flex-wrap">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm text-gray-600">Current Stock:</span>
+                            <span className="text-base font-bold text-gray-900">{item.Quantity} {item.Product.Unit}</span>
                           </div>
-                        )}
+                          <span className={`text-xs px-3 py-1 rounded-full font-medium flex items-center space-x-1 ${status.color}`}>
+                            <StatusIcon className="h-3 w-3" />
+                            <span>{status.label}</span>
+                          </span>
+                          {restockQty && parseInt(restockQty) > 0 && (
+                            <div className="flex items-center space-x-2 text-sm">
+                              <span className="text-gray-500">→</span>
+                              <span className="text-green-700 font-semibold">New: {newStock} {item.Product.Unit}</span>
+                              <span className="text-xs text-green-600">(+{restockQty})</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Restock Input */}
-                    <div className="flex items-center space-x-3">
-                      <div className="flex flex-col">
-                        <label className="text-xs font-medium text-gray-700 mb-1">
-                          Add Crates
-                        </label>
-                        <input
-                          type="text"
-                          value={restockQuantities[product.id]}
-                          onChange={(e) => handleInputChange(product.id, e.target.value)}
-                          placeholder="0"
-                          className="w-32 h-12 placeholder:text-gray-500 text-gray-500 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-slate-900 focus:ring-2 focus:ring-slate-900 focus:ring-opacity-20 outline-none"
-                        />
+                      {/* Restock Input */}
+                      <div className="flex items-center space-x-3">
+                        <div className="flex flex-col">
+                          <label className="text-xs font-medium text-gray-700 mb-1">
+                            Add {item.Product.Unit}
+                          </label>
+                          <input
+                            type="text"
+                            value={restockQuantities[item.ProductID] || ''}
+                            onChange={(e) => handleInputChange(item.ProductID, e.target.value)}
+                            placeholder="0"
+                            disabled={isSubmitting}
+                            className="w-32 h-12 placeholder:text-gray-500 text-gray-500 text-center text-lg font-semibold border-2 border-gray-300 rounded-lg focus:border-slate-900 focus:ring-2 focus:ring-slate-900 focus:ring-opacity-20 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
 
           {/* Summary Footer */}
@@ -240,18 +298,18 @@ export default function RestockPage() {
               <div className="flex items-start space-x-2 text-sm text-gray-600">
                 <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-600" />
                 <div>
-                  <p className="font-medium text-gray-900 mb-1">Restocking from Nairobi HQ</p>
-                  <p>All inventory will be transferred from headquarters. Ensure sufficient stock is available at Nairobi HQ before submitting this order.</p>
+                  <p className="font-medium text-gray-900 mb-1">Restocking from {headquartersBranch?.Name || 'Headquarters'}</p>
+                  <p>All inventory will be transferred from headquarters. Ensure sufficient stock is available at {headquartersBranch?.Name || 'headquarters'} before submitting this order.</p>
                 </div>
               </div>
               
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={totalToRestock === 0}
+                disabled={totalToRestock === 0 || isSubmitting}
                 className="px-8 py-3 bg-slate-900 text-white font-semibold rounded-lg hover:bg-slate-800 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed shadow-sm whitespace-nowrap"
               >
-                Confirm Restock Order
+                {isSubmitting ? 'Processing...' : 'Confirm Restock Order'}
               </button>
             </div>
           </div>
@@ -263,10 +321,10 @@ export default function RestockPage() {
             <Package className="h-5 w-5 text-blue-700 mt-0.5 flex-shrink-0" />
             <div>
               <h3 className="text-sm font-semibold text-blue-900 mb-1">
-                Nairobi HQ Inventory Status
+                {headquartersBranch?.Name || 'Headquarters'} Inventory Status
               </h3>
               <p className="text-sm text-blue-800">
-                Current HQ stock levels are sufficient for this restock operation. After confirmation, the specified quantities will be deducted from Nairobi headquarters and added to {currentBranch?.name}.
+                Current HQ stock levels are sufficient for this restock operation. After confirmation, the specified quantities will be deducted from {headquartersBranch?.Name || 'headquarters'} and added to {currentBranch?.Name}.
               </p>
             </div>
           </div>
