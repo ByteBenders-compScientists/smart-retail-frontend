@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Filter, X, Sliders, Check, Star, TrendingUp } from 'lucide-react';
 
 export interface BranchOption {
@@ -51,51 +51,39 @@ export default function FilterSidebar({ isOpen, onClose, onFilterChange, branche
 
   const branches = branchesProp ?? defaultBranches;
 
+  useEffect(() => {
+    onFilterChange(filters);
+  }, [filters]);
+
   const handleCategoryToggle = (category: string) => {
     setFilters(prev => {
       const newCategories = prev.categories.includes(category)
         ? prev.categories.filter(c => c !== category)
         : [...prev.categories, category];
-      const newFilters = { ...prev, categories: newCategories };
-      onFilterChange(newFilters);
-      return newFilters;
+      return { ...prev, categories: newCategories };
     });
   };
 
   const handleSortChange = (sortId: string) => {
-    setFilters(prev => {
-      const newFilters = { ...prev, sortBy: sortId };
-      onFilterChange(newFilters);
-      return newFilters;
-    });
+    setFilters(prev => ({ ...prev, sortBy: sortId }));
   };
 
   const handleBranchChange = (branchId: string) => {
-    setFilters(prev => {
-      const newFilters = { ...prev, branch: branchId };
-      onFilterChange(newFilters);
-      return newFilters;
-    });
+    setFilters(prev => ({ ...prev, branch: branchId }));
   };
 
   const handleStockToggle = () => {
-    setFilters(prev => {
-      const newFilters = { ...prev, inStock: !prev.inStock };
-      onFilterChange(newFilters);
-      return newFilters;
-    });
+    setFilters(prev => ({ ...prev, inStock: !prev.inStock }));
   };
 
   const clearFilters = () => {
-    const defaultFilters = {
+    setFilters({
       categories: ['Coke', 'Fanta', 'Sprite'],
       priceRange: { min: 0, max: 2000 },
       sortBy: 'popular',
       inStock: true,
       branch: 'all'
-    };
-    setFilters(defaultFilters);
-    onFilterChange(defaultFilters);
+    });
   };
 
   return (

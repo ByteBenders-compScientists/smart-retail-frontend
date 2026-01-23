@@ -1,4 +1,7 @@
 export interface User {
+    postalCode: string;
+    city: string;
+    address: string;
     id: string;
     name: string;
     email: string;
