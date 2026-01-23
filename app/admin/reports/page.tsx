@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Calendar, Filter } from 'lucide-react';
 import ReportTable from '@/components/admin/ReportTable';
 import SalesChart from '@/components/admin/SalesChart';
@@ -59,7 +59,7 @@ export default function ReportsPage() {
   };
 
   // Fetch sales report
-  const fetchSalesReport = async () => {
+  const fetchSalesReport = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
@@ -84,10 +84,10 @@ export default function ReportsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dateRange, customStartDate, customEndDate, selectedBranchId, token]);
 
   // Fetch branch report
-  const fetchBranchReport = async (branchId: string) => {
+  const fetchBranchReport = useCallback(async (branchId: string) => {
     if (!branchId) return;
     
     try {
@@ -102,19 +102,19 @@ export default function ReportsPage() {
     } catch (err) {
       console.error('Failed to load branch report:', err);
     }
-  };
+  }, [dateRange, customStartDate, customEndDate, token]);
 
   // Load initial data
   useEffect(() => {
     fetchSalesReport();
-  }, [token]);
+  }, [fetchSalesReport]);
 
   // Fetch branch report when selected branch changes
   useEffect(() => {
     if (selectedBranchId) {
       fetchBranchReport(selectedBranchId);
     }
-  }, [selectedBranchId, token]);
+  }, [selectedBranchId, fetchBranchReport]);
 
   // Apply filters handler
   const handleApplyFilters = () => {
@@ -289,7 +289,7 @@ export default function ReportsPage() {
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             <p className="text-sm font-medium text-gray-600 mb-2">Average Order</p>
             <p className="text-3xl font-bold text-orange-600">
-              {formatCurrency(Math.round(totalRevenue / totalOrders))}
+              {totalOrders > 0 ? formatCurrency(Math.round(totalRevenue / totalOrders)) : 'KSh 0'}
             </p>
           </div>
         </div>

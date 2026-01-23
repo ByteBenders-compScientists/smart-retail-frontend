@@ -1,3 +1,5 @@
+import type { ApiBranch } from './branch';
+
 /** Sales report filters */
 export interface SalesReportFilters {
   branchId?: string;
@@ -30,8 +32,6 @@ export interface SalesReportResponse {
   salesByBranch: Record<string, BranchSales>;
   salesByBrand: Record<string, BrandSales>;
 }
-
-import type { ApiBranch } from './branch';
 
 /** Top products data in branch report */
 export interface TopProduct {
