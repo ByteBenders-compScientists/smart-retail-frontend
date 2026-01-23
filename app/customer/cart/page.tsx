@@ -30,7 +30,8 @@ import {
   Package,
   Heart,
   Store,
-  XCircle
+  XCircle,
+  RefreshCw
 } from 'lucide-react';
 
 interface DeliveryOption {
@@ -65,8 +66,10 @@ export default function CartPage() {
   const [showMpesaModal, setShowMpesaModal] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [checkoutRequestId, setCheckoutRequestId] = useState('');
+  const [transactionId, setTransactionId] = useState('');
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'completed' | 'failed'>('pending');
   const [error, setError] = useState<string | null>(null);
+  const [pollAttempts, setPollAttempts] = useState(0);
 
   const branchOptions = apiBranches.map((b) => ({
     id: b.id,
@@ -185,6 +188,34 @@ export default function CartPage() {
     return '254' + phone;
   };
 
+  const handleManualRefresh = async () => {
+    if (!orderId) return;
+    
+    setError(null);
+    try {
+      const status = await paymentService.getPaymentStatus(orderId, token);
+      setPaymentStatus(status.status);
+      if (status.transactionId) {
+        setTransactionId(status.transactionId);
+      }
+      
+      if (status.status === 'completed') {
+        setTimeout(() => {
+          setShowMpesaModal(false);
+          setOrderPlaced(true);
+          clearCart();
+          setIsProcessing(false);
+        }, 2000);
+      } else if (status.status === 'failed') {
+        setError('Payment failed. Please try again.');
+        setIsProcessing(false);
+      }
+    } catch (err) {
+      setError('Unable to check payment status. Please try again.');
+      console.error('Manual refresh error:', err);
+    }
+  };
+
   const handlePlaceOrder = async () => {
     if (!validateMpesaPhone(mpesaPhone)) {
       setError('Please enter a valid M-Pesa phone number');
@@ -204,6 +235,8 @@ export default function CartPage() {
     setIsProcessing(true);
     setError(null);
     setPaymentStatus('pending');
+    setTransactionId('');
+    setPollAttempts(0);
 
     try {
       // Step 1: Create order
@@ -250,9 +283,13 @@ export default function CartPage() {
 
     const pollPaymentStatus = async () => {
       attempts++;
+      setPollAttempts(attempts);
       try {
         const status = await paymentService.getPaymentStatus(orderId, token);
         setPaymentStatus(status.status);
+        if (status.transactionId) {
+          setTransactionId(status.transactionId);
+        }
 
         if (status.status === 'completed') {
           if (pollInterval) clearInterval(pollInterval);
@@ -268,13 +305,14 @@ export default function CartPage() {
           setIsProcessing(false);
         } else if (attempts >= maxAttempts) {
           if (pollInterval) clearInterval(pollInterval);
-          setError('Payment is taking longer than expected. Please check your M-Pesa notifications.');
+          setError('Payment verification timeout. Please check your M-Pesa message or contact support if you completed the payment.');
           setIsProcessing(false);
         }
-      } catch {
+      } catch (err) {
+        console.error('Payment status check error:', err);
         if (attempts >= maxAttempts) {
           if (pollInterval) clearInterval(pollInterval);
-          setError('Unable to verify payment status. Please check your orders.');
+          setError('Unable to verify payment status. Please check your orders or contact support.');
           setIsProcessing(false);
         }
       }
@@ -815,8 +853,14 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600">Order ID</span>
-                  <span className="font-semibold text-slate-900">{orderId}</span>
+                  <span className="font-semibold text-slate-900 text-xs">{orderId}</span>
                 </div>
+                {transactionId && (
+                  <div className="flex justify-between mt-2 pt-2 border-t border-slate-200">
+                    <span className="text-slate-600">Transaction ID</span>
+                    <span className="font-semibold text-green-600 text-xs">{transactionId}</span>
+                  </div>
+                )}
               </div>
 
               {paymentStatus === 'pending' && (
@@ -829,6 +873,9 @@ export default function CartPage() {
                   <p className="text-center text-sm text-slate-500">
                     Enter your M-Pesa PIN on your phone to complete the payment
                   </p>
+                  <p className="text-center text-xs text-slate-400">
+                    Checking status... (Attempt {pollAttempts} of 60)
+                  </p>
                 </>
               )}
 
@@ -839,6 +886,11 @@ export default function CartPage() {
                   </div>
                   <p className="text-lg font-semibold text-green-600">Payment Successful!</p>
                   <p className="text-sm text-slate-500 mt-2">Your order has been confirmed</p>
+                  {transactionId && (
+                    <p className="text-xs text-slate-400 mt-2">
+                      Transaction: {transactionId}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -848,17 +900,27 @@ export default function CartPage() {
                     <XCircle className="h-8 w-8 text-red-600" />
                   </div>
                   <p className="text-lg font-semibold text-red-600">Payment Failed</p>
-                  <p className="text-sm text-slate-500 mt-2">Please try again or contact support</p>
+                  <p className="text-sm text-slate-500 mt-2">{error || 'Please try again or contact support'}</p>
+                  <p className="text-xs text-slate-400 mt-2">Order ID: {orderId}</p>
                 </div>
               )}
             </div>
 
             {paymentStatus === 'pending' && (
-              <div className="flex items-center gap-3 text-sm text-slate-600">
-                <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                <p>
-                  Don&apos;t see the prompt? Check your phone&apos;s messages or dial *234# to approve the payment
-                </p>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-sm text-slate-600">
+                  <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                  <p>
+                    Don&apos;t see the prompt? Check your phone&apos;s messages or dial *234# to approve the payment
+                  </p>
+                </div>
+                <button
+                  onClick={handleManualRefresh}
+                  className="w-full py-2 px-4 bg-slate-100 text-slate-700 font-medium rounded-lg hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh Payment Status
+                </button>
               </div>
             )}
 
