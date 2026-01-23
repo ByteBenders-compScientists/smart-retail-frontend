@@ -15,6 +15,11 @@ export default function BranchesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBranch, setEditingBranch] = useState<ApiBranch | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{ isOpen: boolean; branchId: string | null; branchName: string | null }>({
+    isOpen: false,
+    branchId: null,
+    branchName: null,
+  });
 
   // Form state
   const [formData, setFormData] = useState<CreateBranchPayload>({
@@ -102,19 +107,24 @@ export default function BranchesPage() {
   };
 
   const handleDelete = async (branchId: string) => {
-    if (!confirm('Are you sure you want to delete this branch?')) {
-      return;
-    }
-
     try {
       setIsDeleting(branchId);
       await deleteBranch(branchId, token);
       loadBranches();
+      setDeleteConfirmModal({ isOpen: false, branchId: null, branchName: null });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete branch');
     } finally {
       setIsDeleting(null);
     }
+  };
+
+  const handleDeleteClick = (branch: ApiBranch) => {
+    setDeleteConfirmModal({
+      isOpen: true,
+      branchId: branch.ID,
+      branchName: branch.Name,
+    });
   };
 
   return (
@@ -231,7 +241,7 @@ export default function BranchesPage() {
                             <Edit className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => handleDelete(branch.ID)}
+                            onClick={() => handleDeleteClick(branch)}
                             disabled={isDeleting === branch.ID}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
                             title="Delete branch"
@@ -370,6 +380,36 @@ export default function BranchesPage() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteConfirmModal.isOpen}
+        onClose={() => setDeleteConfirmModal({ isOpen: false, branchId: null, branchName: null })}
+        title="Delete Branch"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">
+            Are you sure you want to delete the branch <strong>{deleteConfirmModal.branchName}</strong>? This action cannot be undone.
+          </p>
+          <div className="flex items-center justify-end gap-3 pt-4 border-t">
+            <button
+              type="button"
+              onClick={() => setDeleteConfirmModal({ isOpen: false, branchId: null, branchName: null })}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => deleteConfirmModal.branchId && handleDelete(deleteConfirmModal.branchId)}
+              disabled={isDeleting !== null}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
