@@ -30,6 +30,8 @@ import { parseTags } from '@/types/product';
 
 type ModalMode = 'create' | 'edit' | 'stock' | 'delete' | null;
 
+const NUMERIC_FIELDS = new Set(['price', 'originalPrice', 'rating', 'reviews']);
+
 export default function AdminProductsPage() {
   const { token } = useAuthContext();
   const [products, setProducts] = useState<ApiProduct[]>([]);
@@ -237,7 +239,7 @@ export default function AdminProductsPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'price' || name === 'originalPrice' || name === 'rating' || name === 'reviews'
+      [name]: NUMERIC_FIELDS.has(name)
         ? parseFloat(value) || 0
         : value,
     }));

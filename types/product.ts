@@ -33,7 +33,7 @@ export interface CreateProductRequest {
   category: string;
   volume: string;
   unit: string;
-  tags?: string[];
+  tags?: string[]; // Client-side array; API will convert to JSON string
 }
 
 /** PUT /api/v1/admin/products/:id - Update product request */
@@ -49,7 +49,7 @@ export interface UpdateProductRequest {
   category?: string;
   volume?: string;
   unit?: string;
-  tags?: string[];
+  tags?: string[]; // Client-side array; API will convert to JSON string
 }
 
 /** Branch information from stock response */
