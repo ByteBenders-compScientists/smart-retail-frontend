@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { 
   Plus, 
   Search, 
@@ -57,15 +58,7 @@ export default function AdminProductsPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    loadProducts();
-  }, [token]);
-
-  useEffect(() => {
-    filterProducts();
-  }, [searchQuery, brandFilter, products]);
-
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getProducts(token);
@@ -76,9 +69,9 @@ export default function AdminProductsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
-  const filterProducts = () => {
+  const filterProducts = useCallback(() => {
     let filtered = [...products];
 
     if (searchQuery) {
@@ -96,7 +89,15 @@ export default function AdminProductsPage() {
     }
 
     setFilteredProducts(filtered);
-  };
+  }, [products, searchQuery, brandFilter]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  useEffect(() => {
+    filterProducts();
+  }, [filterProducts]);
 
   const handleFilterByBrand = async (brand: string) => {
     if (!brand) {
@@ -364,9 +365,11 @@ export default function AdminProductsPage() {
                     <tr key={product.ID} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center space-x-3">
-                          <img
+                          <Image
                             src={product.Image}
                             alt={product.Name}
+                            width={48}
+                            height={48}
                             className="h-12 w-12 rounded-lg object-cover"
                           />
                           <div>
