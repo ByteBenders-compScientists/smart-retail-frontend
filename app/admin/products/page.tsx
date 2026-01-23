@@ -28,7 +28,7 @@ import {
 import type { ApiProduct, CreateProductRequest, UpdateProductRequest, ProductStockResponse } from '@/types/product';
 import { parseTags } from '@/types/product';
 
-type ModalMode = 'create' | 'edit' | 'stock' | null;
+type ModalMode = 'create' | 'edit' | 'stock' | 'delete' | null;
 
 export default function AdminProductsPage() {
   const { token } = useAuthContext();
@@ -207,19 +207,27 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handleDelete = async (productId: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) {
-      return;
-    }
+  const openDeleteModal = (product: ApiProduct) => {
+    setModalMode('delete');
+    setSelectedProduct(product);
+    setError('');
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedProduct) return;
 
     try {
-      await deleteProduct(productId, token);
+      setFormLoading(true);
+      await deleteProduct(selectedProduct.ID, token);
       setSuccess('Product deleted successfully!');
+      closeModal();
       loadProducts();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete product');
       setTimeout(() => setError(''), 3000);
+    } finally {
+      setFormLoading(false);
     }
   };
 
@@ -418,7 +426,7 @@ export default function AdminProductsPage() {
                             <Edit2 className="h-5 w-5" />
                           </button>
                           <button
-                            onClick={() => handleDelete(product.ID)}
+                            onClick={() => openDeleteModal(product)}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete Product"
                           >
@@ -755,6 +763,76 @@ export default function AdminProductsPage() {
                   </div>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {modalMode === 'delete' && selectedProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            {/* Modal Header */}
+            <div className="bg-red-600 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-white">Delete Product</h2>
+              <button onClick={closeModal} className="text-white hover:text-gray-200">
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              {error && (
+                <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
+                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-800">{error}</p>
+                </div>
+              )}
+
+              <div className="flex items-start space-x-3 mb-6">
+                <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-gray-900 font-medium mb-2">
+                    Are you sure you want to delete this product?
+                  </p>
+                  <p className="text-sm text-gray-600 mb-2">
+                    <strong>{selectedProduct.Name}</strong>
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    This action cannot be undone. The product will be permanently removed from all branches.
+                  </p>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  disabled={formLoading}
+                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteConfirm}
+                  disabled={formLoading}
+                  className="flex items-center space-x-2 px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {formLoading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-5 w-5" />
+                      <span>Delete Product</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

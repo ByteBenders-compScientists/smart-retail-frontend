@@ -61,7 +61,13 @@ export async function getProductsByBrand(
   brand: string,
   token?: string | null
 ): Promise<ApiProduct[]> {
-  return api<ApiProduct[]>(`${BASE}/brand?brand=${encodeURIComponent(brand)}`, {
+  // Validate brand parameter
+  const trimmedBrand = brand.trim();
+  if (!trimmedBrand) {
+    throw new Error('Brand name is required');
+  }
+  
+  return api<ApiProduct[]>(`${BASE}/brand?brand=${encodeURIComponent(trimmedBrand)}`, {
     token,
   });
 }
