@@ -94,8 +94,56 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* LEFT SIDE - FORM */}
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* MOBILE - ROTATING IMAGES AT TOP */}
+      <div className="lg:hidden w-full h-64">
+        <div className="relative w-full h-full">
+          {slides.map((slide, index) => (
+            <div
+              key={index}
+              className={`absolute inset-0 transition-opacity duration-1000 overflow-hidden ${
+                index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              {/* Background Image */}
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: `url(${slide.image})` }}
+              />
+
+              {/* Gradient Overlay */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient}`} />
+
+              {/* Content */}
+              <div className="relative h-full flex flex-col items-center justify-center text-white px-6">
+                <h2 className="text-3xl font-bold mb-2 text-center drop-shadow-lg">
+                  {slide.title}
+                </h2>
+                <p className="text-lg text-center opacity-90 drop-shadow-md">
+                  {slide.subtitle}
+                </p>
+
+                {/* Dots Indicator */}
+                <div className="absolute bottom-6 flex space-x-2">
+                  {slides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentImageIndex(idx)}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        idx === currentImageIndex
+                          ? 'bg-white w-8'
+                          : 'bg-white/50 hover:bg-white/75'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* FORM SECTION */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md">
           {!showSuccess ? (
@@ -231,9 +279,9 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* RIGHT SIDE - ROTATING IMAGES WITH REDUCED SPACING */}
+      {/* DESKTOP - RIGHT SIDE - ROTATING IMAGES */}
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-white p-6">
-        <div className="relative w-full h-full  ">
+        <div className="relative w-full h-full">
           {slides.map((slide, index) => (
             <div
               key={index}
