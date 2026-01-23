@@ -14,6 +14,7 @@ import {
   Bell,
   User,
   Settings,
+  ShoppingBag,
   Building2,
 } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -61,6 +62,11 @@ export default function AdminLayout({
       name: 'Dashboard',
       href: '/admin/dashboard',
       icon: LayoutDashboard,
+    },
+    {
+      name: 'Products',
+      href: '/admin/products',
+      icon: ShoppingBag,
     },
     {
       name: 'Branches',
