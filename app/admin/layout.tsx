@@ -15,6 +15,7 @@ import {
   User,
   Settings,
   ShoppingBag,
+  Building2,
 } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { ROUTES } from '@/lib/constants';
@@ -66,6 +67,11 @@ export default function AdminLayout({
       name: 'Products',
       href: '/admin/products',
       icon: ShoppingBag,
+    },
+    {
+      name: 'Branches',
+      href: '/admin/branches',
+      icon: Building2,
     },
     {
       name: 'Restock',

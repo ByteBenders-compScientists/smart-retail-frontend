@@ -33,3 +33,22 @@ export function mapApiBranchToDisplay(b: ApiBranch): BranchDisplay {
     status: b.Status,
   };
 }
+
+/** POST /api/v1/admin/branches */
+export interface CreateBranchPayload {
+  id: string;
+  name: string;
+  isHeadquarter: boolean;
+  address: string;
+  phone: string;
+  status: string;
+}
+
+/** PUT /api/v1/admin/branches/:id */
+export interface UpdateBranchPayload {
+  name: string;
+  isHeadquarter: boolean;
+  address: string;
+  phone: string;
+  status: string;
+}
