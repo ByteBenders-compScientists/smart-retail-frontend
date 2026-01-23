@@ -1,6 +1,6 @@
 export const APP_NAME = 'Smart-Retail';
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://drinx-retailers-bd.onrender.com/';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://drinx-retailers-bd.onrender.com';
 
 export const ROUTES = {
   HOME: '/',
