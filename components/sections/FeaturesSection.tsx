@@ -50,7 +50,7 @@ export default function FeaturesSection() {
   ];
 
   return (
-    <section id="features" className="bg-gray-50 py-20 overflow-hidden">
+    <section id="features" className="bg-gray-50 py-20 overflow-hidden -mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">

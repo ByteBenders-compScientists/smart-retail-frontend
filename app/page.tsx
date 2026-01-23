@@ -15,7 +15,7 @@ export default function LandingPage() {
       
       <main className="flex-grow">
         <HeroSection />
-        <FeaturesSection />
+        <FeaturesSection/>
         <ProductsSection />
         <BranchesSection />
         <CTASection />

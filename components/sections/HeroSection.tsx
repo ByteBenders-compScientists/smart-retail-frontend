@@ -7,9 +7,9 @@ import { motion } from 'framer-motion';
 
 export default function HeroSection() {
   return (
-    <section className="bg-slate-900 overflow-hidden relative min-h-screen flex items-center">
+    <section className=" overflow-hidden relative  min-h-screen flex items-center">
       {/* Background Video */}
-      <div className="absolute inset-0 w-full h-full overflow-hidden -mt-16">
+      <div className="absolute inset-0 w-full h-full overflow-hidden -mt-22">
         <video
           autoPlay
           loop
