@@ -106,7 +106,7 @@ export default function Footer() {
         <div className="mt-8 pt-8 border-t border-gray-700">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-gray-400 text-sm">
-              © {currentYear} Smart-Retail. All rights reserved.
+              © {currentYear} Drinx-Retailers. All rights reserved.
             </p>
             <div className="flex items-center space-x-4 text-sm text-gray-400 flex-wrap justify-center">
               <span className="font-medium">Branches:</span>
