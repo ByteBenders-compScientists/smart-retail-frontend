@@ -46,7 +46,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
   };
 
   return (
-    <div className="group sahdow-xl bg-white hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col h-full rounded-md">
+    <div className="group shadow-xl border-2 bg-white hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col h-full rounded-md">
       {/* Product Image Section */}
       <div className="relative h-56 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
         {/* Stock Badge - only when we have per-branch stock (e.g. branch inventory) */}
