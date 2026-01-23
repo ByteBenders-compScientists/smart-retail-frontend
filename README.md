@@ -629,6 +629,17 @@ npm run type-check
 # Ensure backend server is running
 ```
 
+**Issue**: M-Pesa payment remains pending after completion
+```bash
+# This is a BACKEND issue - see documentation for fix
+# 1. Read BACKEND_FIX_REQUIRED.md for detailed fix guide
+# 2. Frontend improvements documented in FRONTEND_TESTING_GUIDE.md
+# 3. Root cause analysis in MPESA_PAYMENT_ISSUE_ANALYSIS.md
+# 
+# Quick Summary: Backend M-Pesa callback handler needs to be implemented
+# to update payment status from 'pending' to 'completed' after successful payment.
+```
+
 ## Performance Optimization
 
 - **Code splitting**: Automatic with Next.js app router
