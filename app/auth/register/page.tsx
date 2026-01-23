@@ -23,26 +23,27 @@ export default function RegisterPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Rotating images and messages
-const slides = [
-  {
-    image: '/images/drinks7.jpg',
-    gradient: 'from-slate-600/30 via-slate-700/50 to-slate-900/80',
-    title: 'Join Drinx Retailers',
-    subtitle: 'Start shopping from 5 branches across Kenya',
-  },
-  {
-    image: '/images/drinks5.jpg',
-    gradient: 'from-slate-600/30 via-slate-700/50 to-slate-900/80',
-    title: 'Best Prices Guaranteed',
-    subtitle: 'Same quality, same price at every location',
-  },
-  {
-    image: '/images/drinks6.jpg',
-    gradient: 'from-slate-600/30 via-slate-700/50 to-slate-900/80',
-    title: 'Fast & Secure Payments',
-    subtitle: 'Checkout in seconds with M-Pesa',
-  },
-];
+  const slides = [
+    {
+      image: '/images/drinks7.jpg',
+      gradient: 'from-slate-600/30 via-slate-700/50 to-slate-900/80',
+      title: 'Join Drinx Retailers',
+      subtitle: 'Start shopping from 5 branches across Kenya',
+    },
+    {
+      image: '/images/drinks5.jpg',
+      gradient: 'from-slate-600/30 via-slate-700/50 to-slate-900/80',
+      title: 'Best Prices Guaranteed',
+      subtitle: 'Same quality, same price at every location',
+    },
+    {
+      image: '/images/drinks6.jpg',
+      gradient: 'from-slate-600/30 via-slate-700/50 to-slate-900/80',
+      title: 'Fast & Secure Payments',
+      subtitle: 'Checkout in seconds with M-Pesa',
+    },
+  ];
+
   // Auto-rotate images
   useEffect(() => {
     const interval = setInterval(() => {
@@ -100,8 +101,56 @@ const slides = [
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* LEFT SIDE - ROTATING IMAGES WITH REDUCED SPACING */}
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* MOBILE - ROTATING IMAGES AT TOP */}
+      <div className="lg:hidden w-full h-64">
+        <div className="relative w-full h-full">
+          {slides.map((slide, index) => (
+            <div
+              key={index}
+              className={`absolute inset-0 transition-opacity duration-1000 overflow-hidden ${
+                index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              {/* Background Image */}
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: `url(${slide.image})` }}
+              />
+
+              {/* Gradient Overlay */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient}`} />
+
+              {/* Content */}
+              <div className="relative h-full flex flex-col items-center justify-center text-white px-6">
+                <h2 className="text-3xl font-bold mb-2 text-center drop-shadow-lg">
+                  {slide.title}
+                </h2>
+                <p className="text-lg text-center opacity-90 drop-shadow-md">
+                  {slide.subtitle}
+                </p>
+
+                {/* Dots Indicator */}
+                <div className="absolute bottom-6 flex space-x-2">
+                  {slides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentImageIndex(idx)}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        idx === currentImageIndex
+                          ? 'bg-white w-8'
+                          : 'bg-white/50 hover:bg-white/75'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* DESKTOP - LEFT SIDE - ROTATING IMAGES */}
       <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-white p-6">
         <div className="relative w-full h-full">
           {slides.map((slide, index) => (
@@ -149,7 +198,7 @@ const slides = [
         </div>
       </div>
 
-      {/* RIGHT SIDE - FORM */}
+      {/* FORM SECTION */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md">
           {!showSuccess ? (
