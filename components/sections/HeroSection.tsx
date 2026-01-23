@@ -9,7 +9,7 @@ export default function HeroSection() {
   return (
     <section className="bg-slate-900 overflow-hidden relative min-h-screen flex items-center">
       {/* Background Video */}
-      <div className="absolute inset-0 w-full h-full overflow-hidden">
+      <div className="absolute inset-0 w-full h-full overflow-hidden -mt-16">
         <video
           autoPlay
           loop
