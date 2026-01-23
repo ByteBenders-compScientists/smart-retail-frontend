@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { MapPin, Phone, Mail, Facebook, Instagram, Twitter } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-blue-900/30 text-white border-t border-gray-700">
+    <footer className="bg-slate-700/70 text-white border-t border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -19,7 +20,13 @@ export default function Footer() {
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-xl font-bold text-white mb-4">Smart-Retail</h3>
+           <Image
+                src="/images/logo.png"
+                alt="Smart-Retail Logo"
+                width={250}
+                height={50}
+                className="h-10 w-auto"
+              />
             <p className="text-gray-300 mb-4">
               Your trusted supermarket chain across Kenya. Quality drinks at the same price, available at all our branches.
             </p>
