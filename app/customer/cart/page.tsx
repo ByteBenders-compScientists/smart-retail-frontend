@@ -853,12 +853,12 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600">Order ID</span>
-                  <span className="font-semibold text-slate-900 text-xs">{orderId}</span>
+                  <span className="font-semibold text-slate-900 text-sm break-all">{orderId}</span>
                 </div>
                 {transactionId && (
                   <div className="flex justify-between mt-2 pt-2 border-t border-slate-200">
                     <span className="text-slate-600">Transaction ID</span>
-                    <span className="font-semibold text-green-600 text-xs">{transactionId}</span>
+                    <span className="font-semibold text-green-600 text-sm">{transactionId}</span>
                   </div>
                 )}
               </div>
