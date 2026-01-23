@@ -20,6 +20,73 @@ export interface ApiProduct {
   UpdatedAt: string;
 }
 
+/** POST /api/v1/admin/products - Create product request */
+export interface CreateProductRequest {
+  name: string;
+  brand: string;
+  description: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  rating?: number;
+  reviews?: number;
+  category: string;
+  volume: string;
+  unit: string;
+  tags?: string[];
+}
+
+/** PUT /api/v1/admin/products/:id - Update product request */
+export interface UpdateProductRequest {
+  name?: string;
+  brand?: string;
+  description?: string;
+  price?: number;
+  originalPrice?: number;
+  image?: string;
+  rating?: number;
+  reviews?: number;
+  category?: string;
+  volume?: string;
+  unit?: string;
+  tags?: string[];
+}
+
+/** Branch information from stock response */
+export interface ApiBranch {
+  DeletedAt: string | null;
+  ID: string;
+  Name: string;
+  IsHeadquarter: boolean;
+  Address: string;
+  Phone: string;
+  Status: string;
+  CreatedAt: string;
+  UpdatedAt: string;
+}
+
+/** Branch stock item from GET /api/v1/admin/products/:id/stock */
+export interface ApiBranchStock {
+  DeletedAt: string | null;
+  ID: string;
+  BranchID: string;
+  Branch: ApiBranch;
+  ProductID: string;
+  Product: ApiProduct;
+  Quantity: number;
+  LastRestocked: string;
+  CreatedAt: string;
+  UpdatedAt: string;
+}
+
+/** GET /api/v1/admin/products/:id/stock - Product stock response */
+export interface ProductStockResponse {
+  branch_stocks: ApiBranchStock[];
+  branches: number;
+  product_id: string;
+  total_stock: number;
+}
+
 /** GET /api/v1/products/branch/:branchId */
 export interface ApiBranchInventoryItem {
   id: string;
