@@ -31,6 +31,8 @@ export interface SalesReportResponse {
   salesByBrand: Record<string, BrandSales>;
 }
 
+import type { ApiBranch } from './branch';
+
 /** Top products data in branch report */
 export interface TopProduct {
   revenue?: number;
@@ -46,17 +48,7 @@ export interface BranchSalesData {
 
 /** GET /api/v1/admin/reports/branch/:branchId */
 export interface BranchReportResponse {
-  branch: {
-    DeletedAt: string | null;
-    ID: string;
-    Name: string;
-    IsHeadquarter: boolean;
-    Address: string;
-    Phone: string;
-    Status: string;
-    CreatedAt: string;
-    UpdatedAt: string;
-  };
+  branch: ApiBranch;
   branchSales: BranchSalesData;
 }
 

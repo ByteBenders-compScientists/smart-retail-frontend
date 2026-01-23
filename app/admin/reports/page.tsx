@@ -107,14 +107,14 @@ export default function ReportsPage() {
   // Load initial data
   useEffect(() => {
     fetchSalesReport();
-  }, []);
+  }, [token]);
 
   // Fetch branch report when selected branch changes
   useEffect(() => {
     if (selectedBranchId) {
       fetchBranchReport(selectedBranchId);
     }
-  }, [selectedBranchId]);
+  }, [selectedBranchId, token]);
 
   // Apply filters handler
   const handleApplyFilters = () => {
@@ -131,9 +131,8 @@ export default function ReportsPage() {
     return Object.entries(salesData.salesByBranch).map(([branchName, data], idx) => ({
       id: String(idx + 1),
       branch: branchName,
-      orders: 0, // API doesn't provide orders count in salesByBranch
       revenue: data.revenue || 0,
-      avgOrder: 0,
+      units: data.units || 0,
     }));
   };
 
@@ -165,9 +164,8 @@ export default function ReportsPage() {
 
   const branchColumns = [
     { key: 'branch', label: 'Branch' },
-    { key: 'orders', label: 'Total Orders' },
+    { key: 'units', label: 'Units Sold' },
     { key: 'revenue', label: 'Revenue', format: formatCurrency },
-    { key: 'avgOrder', label: 'Avg Order', format: formatCurrency },
   ];
 
   const productColumns = [
