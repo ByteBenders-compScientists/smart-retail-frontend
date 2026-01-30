@@ -179,7 +179,7 @@ export default function ReportsPage() {
   ];
 
   const productColumns = [
-    { key: 'product', label: 'Product' },
+    { key: 'product', label: 'Brand' },
     { key: 'unitsSold', label: 'Units Sold' },
     { key: 'revenue', label: 'Revenue', format: formatCurrency },
     { key: 'percentage', label: 'Share', format: formatPercentage },
@@ -395,7 +395,7 @@ export default function ReportsPage() {
                     <p className="text-3xl font-bold text-orange-600">
                       {(() => {
                         const units = Object.values(salesData?.salesByBrand || {}).map(b => b.units);
-                        return units.length > 0 ? Math.max(...units) : 0;
+                        return units.length > 0 ? Math.max(0, ...units) : 0;
                       })()}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">Best Seller</p>
