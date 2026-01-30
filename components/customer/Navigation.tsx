@@ -18,10 +18,12 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useCartCount } from '@/hooks/useCartCount';
 import { ROUTES } from '@/lib/constants';
 
 export default function Navigation() {
   const { user, logout } = useAuthContext();
+  const { cartCount, isHydrated } = useCartCount();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState('Nairobi HQ');
@@ -55,6 +57,16 @@ export default function Navigation() {
   const handleLogout = async () => {
     await logout();
     router.push(ROUTES.LOGIN);
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (!user?.name) return 'U';
+    const names = user.name.split(' ');
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return user.name.substring(0, 2).toUpperCase();
   };
 
   return (
@@ -146,27 +158,31 @@ export default function Navigation() {
               <span className="absolute top-1 right-1 h-2 w-2 bg-blue-500 rounded-full ring-2 ring-slate-800"></span>
             </button>
 
-            {/* Cart */}
+            {/* Cart with dynamic count */}
             <Link
               href="/customer/cart"
               className="relative p-2 rounded-lg text-slate-300 hover:bg-slate-700 transition-colors"
             >
               <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-5 w-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                3
-              </span>
+              {isHydrated && cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-5 w-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
             </Link>
 
-            {/* Profile Dropdown */}
+            {/* Profile Dropdown - Smaller */}
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-700 transition-colors"
+                className="flex items-center gap-1.5 p-1 rounded-lg hover:bg-slate-700 transition-colors"
               >
-                <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-white" />
+                <div className="h-7 w-7 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-xs font-semibold text-white">
+                    {getUserInitials()}
+                  </span>
                 </div>
-                <ChevronDown className="h-3.5 w-3.5 text-slate-400 hidden sm:block" />
+                <ChevronDown className="h-3 w-3 text-slate-400 hidden sm:block" />
               </button>
 
               {isProfileOpen && (
@@ -177,8 +193,12 @@ export default function Navigation() {
                   ></div>
                   <div className="absolute right-0 mt-2 w-56 bg-slate-700 rounded-lg shadow-2xl border border-slate-600 py-2 z-50">
                     <div className="px-4 py-3 border-b border-slate-600">
-                      <p className="font-semibold text-white">John Doe</p>
-                      <p className="text-xs text-slate-400">john@example.com</p>
+                      <p className="font-semibold text-white truncate">
+                        {user?.name || 'User'}
+                      </p>
+                      <p className="text-xs text-slate-400 truncate">
+                        {user?.email || 'user@example.com'}
+                      </p>
                     </div>
                     <Link
                       href="/customer/profile"
@@ -186,7 +206,7 @@ export default function Navigation() {
                       onClick={() => setIsProfileOpen(false)}
                     >
                       <User className="h-4 w-4" />
-                      <span className="text-sm">Profile Settings</span>
+                      <span className="text-sm">My Profile</span>
                     </Link>
                     <button
                       onClick={handleLogout}
@@ -239,6 +259,11 @@ export default function Navigation() {
                 >
                   <Icon className="h-5 w-5" />
                   <span>{item.name}</span>
+                  {item.name === 'Cart' && isHydrated && cartCount > 0 && (
+                    <span className="ml-auto h-5 w-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      {cartCount > 99 ? '99+' : cartCount}
+                    </span>
+                  )}
                   {isActive && (
                     <span className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r"></span>
                   )}

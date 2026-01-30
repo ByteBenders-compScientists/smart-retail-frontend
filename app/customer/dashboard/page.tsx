@@ -23,6 +23,7 @@ import {
 import { useProducts } from '@/hooks/useProducts';
 import { useBranches } from '@/hooks/useBranches';
 import { useBranchInventory } from '@/hooks/useBranchInventory';
+import { useCart } from '@/hooks/useCart';
 import type { ProductDisplay } from '@/types/product';
 import { ROUTES } from '@/lib/constants';
 
@@ -40,6 +41,7 @@ export default function DashboardPage() {
   const { user, token } = useAuthContext();
   const { products: allProducts, isLoading: productsLoading, error: productsError, refetch: refetchProducts } = useProducts(token);
   const { branches, isLoading: branchesLoading, error: branchesError, refetch: refetchBranches } = useBranches(token);
+  const { addToCart } = useCart();
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
@@ -136,7 +138,25 @@ export default function DashboardPage() {
   }, [filteredProducts, filters.sortBy]);
 
   const handleAddToCart = (productId: string, quantity: number) => {
-    console.log(`Added ${quantity} of product ${productId} to cart`);
+    const product = sourceProducts.find(p => p.id === productId);
+    if (!product) {
+      console.error('Product not found');
+      return;
+    }
+
+    addToCart({
+      productId,
+      name: product.name,
+      brand: product.brand,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.image,
+      quantity,
+      volume: product.volume,
+      unit: product.unit,
+      branchId: selectedBranch !== 'all' ? selectedBranch : undefined,
+      branchName: selectedBranch !== 'all' ? selectedBranchName : undefined,
+    });
   };
 
   const currentBranch = branchOptions.find((b) => b.id === selectedBranch) ?? branchOptions[0];

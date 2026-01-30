@@ -18,6 +18,13 @@ export interface CartItem {
   branchName?: string;
 }
 
+// Helper to dispatch cart update event
+const dispatchCartUpdate = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('cartUpdated'));
+  }
+};
+
 export function useCart() {
   const [cartItems, setCartItems, removeCart, isHydrated] = useLocalStorage<CartItem[]>('smart-retail-cart', []);
 
@@ -35,6 +42,7 @@ export function useCart() {
           ...updatedItems[existingItemIndex],
           quantity: updatedItems[existingItemIndex].quantity + item.quantity,
         };
+        dispatchCartUpdate();
         return updatedItems;
       } else {
         // Add new item with unique id using crypto.randomUUID for better uniqueness
@@ -44,6 +52,7 @@ export function useCart() {
             ? crypto.randomUUID() 
             : `${item.productId}-${item.branchId || 'default'}-${Date.now()}-${Math.random()}`,
         };
+        dispatchCartUpdate();
         return [...prevItems, newItem];
       }
     });
@@ -51,19 +60,26 @@ export function useCart() {
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
     if (quantity < 1) return;
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
+    setCartItems((prevItems) => {
+      const updated = prevItems.map((item) =>
         item.id === id ? { ...item, quantity } : item
-      )
-    );
+      );
+      dispatchCartUpdate();
+      return updated;
+    });
   }, [setCartItems]);
 
   const removeItem = useCallback((id: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    setCartItems((prevItems) => {
+      const filtered = prevItems.filter((item) => item.id !== id);
+      dispatchCartUpdate();
+      return filtered;
+    });
   }, [setCartItems]);
 
   const clearCart = useCallback(() => {
     setCartItems([]);
+    dispatchCartUpdate();
   }, [setCartItems]);
 
   const getCartTotal = useCallback(() => {
