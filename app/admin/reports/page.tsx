@@ -179,7 +179,7 @@ export default function ReportsPage() {
   ];
 
   const productColumns = [
-    { key: 'product', label: 'Product' },
+    { key: 'product', label: 'Brand' },
     { key: 'unitsSold', label: 'Units Sold' },
     { key: 'revenue', label: 'Revenue', format: formatCurrency },
     { key: 'percentage', label: 'Share', format: formatPercentage },
@@ -314,38 +314,96 @@ export default function ReportsPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <p className="text-sm font-medium text-gray-600 mb-2">Total Revenue</p>
-              <p className="text-3xl font-bold text-blue-600">{formatCurrency(totalRevenue)}</p>
-              <p className="text-xs text-gray-500 mt-1">
-                {selectedBranchId ? 'Branch Revenue' : 'All Branches'}
-              </p>
-            </div>
-            {selectedBranchId && branchReportData ? (
-              <>
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <p className="text-sm font-medium text-gray-600 mb-2">Total Orders</p>
-                  <p className="text-3xl font-bold text-green-600">{totalOrders.toLocaleString()}</p>
-                  <p className="text-xs text-gray-500 mt-1">Branch Orders</p>
-                </div>
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <p className="text-sm font-medium text-gray-600 mb-2">Average Order</p>
-                  <p className="text-3xl font-bold text-orange-600">
-                    {totalOrders > 0 ? formatCurrency(Math.round(totalRevenue / totalOrders)) : 'KSh 0'}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">Per Order Value</p>
-                </div>
-              </>
-            ) : (
-              <div className="md:col-span-2 bg-white border border-gray-200 rounded-lg p-6 flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <p className="font-medium mb-1">Select a branch to view detailed order metrics</p>
-                  <p className="text-sm">Order count and average order value are available per branch</p>
+          <>
+            {/* Grand Total Revenue Card */}
+            <div className="mb-8">
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 border border-blue-300 rounded-lg p-8 text-white shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-blue-100 mb-2">Grand Total Revenue</p>
+                    <p className="text-5xl font-bold">{formatCurrency(totalRevenue)}</p>
+                    <p className="text-sm text-blue-100 mt-2">
+                      {selectedBranchId 
+                        ? `From ${branches.find(b => b.ID === selectedBranchId)?.Name || 'Selected Branch'}` 
+                        : 'Across All Branches'}
+                    </p>
+                  </div>
+                  {salesData && (
+                    <div className="text-right">
+                      <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                        <p className="text-xs text-blue-100 mb-1">Active Filters</p>
+                        <div className="text-xs space-y-1">
+                          {salesData.filters.startDate && (
+                            <div>Start: {salesData.filters.startDate}</div>
+                          )}
+                          {salesData.filters.endDate && (
+                            <div>End: {salesData.filters.endDate}</div>
+                          )}
+                          {salesData.filters.branchId && (
+                            <div>Branch: {branches.find(b => b.ID === salesData.filters.branchId)?.Name}</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+
+            {/* Additional Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {selectedBranchId && branchReportData ? (
+                <>
+                  <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                    <p className="text-sm font-medium text-gray-600 mb-2">Branch Revenue</p>
+                    <p className="text-3xl font-bold text-blue-600">
+                      {formatCurrency(branchReportData.branchSales.totalRevenue)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">From {branchReportData.branch.Name}</p>
+                  </div>
+                  <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                    <p className="text-sm font-medium text-gray-600 mb-2">Total Orders</p>
+                    <p className="text-3xl font-bold text-green-600">{totalOrders.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 mt-1">Branch Orders</p>
+                  </div>
+                  <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                    <p className="text-sm font-medium text-gray-600 mb-2">Average Order Value</p>
+                    <p className="text-3xl font-bold text-orange-600">
+                      {totalOrders > 0 ? formatCurrency(Math.round(branchReportData.branchSales.totalRevenue / totalOrders)) : 'KSh 0'}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">Per Order</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                    <p className="text-sm font-medium text-gray-600 mb-2">Total Branches</p>
+                    <p className="text-3xl font-bold text-purple-600">
+                      {Object.keys(salesData?.salesByBranch || {}).length}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">Active Locations</p>
+                  </div>
+                  <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                    <p className="text-sm font-medium text-gray-600 mb-2">Total Brands</p>
+                    <p className="text-3xl font-bold text-green-600">
+                      {Object.keys(salesData?.salesByBrand || {}).length}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">Product Brands</p>
+                  </div>
+                  <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                    <p className="text-sm font-medium text-gray-600 mb-2">Top Product Units</p>
+                    <p className="text-3xl font-bold text-orange-600">
+                      {(() => {
+                        const units = Object.values(salesData?.salesByBrand || {}).map(b => b.units);
+                        return units.length > 0 ? Math.max(0, ...units) : 0;
+                      })()}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">Best Seller</p>
+                  </div>
+                </>
+              )}
+            </div>
+          </>
         )}
 
         {/* Sales by Branch Table */}
@@ -356,6 +414,11 @@ export default function ReportsPage() {
               columns={branchColumns}
               data={salesByBranchReport}
               onExport={handleExport}
+              showSummary={true}
+              summaryData={[
+                { label: 'Total Revenue', value: formatCurrency(totalRevenue) },
+                { label: 'Branches', value: String(salesByBranchReport.length) }
+              ]}
             />
           </div>
         )}
@@ -364,10 +427,21 @@ export default function ReportsPage() {
         {(reportType === 'all' || reportType === 'product') && (
           <div className="mb-8">
             <ReportTable
-              title="Sales by Product"
+              title="Sales by Brand"
               columns={productColumns}
               data={salesByProductReport}
               onExport={handleExport}
+              showSummary={true}
+              summaryData={[
+                { 
+                  label: 'Total Units', 
+                  value: String(salesByProductReport.reduce((sum, p) => sum + p.unitsSold, 0))
+                },
+                { 
+                  label: 'Total Revenue', 
+                  value: formatCurrency(salesByProductReport.reduce((sum, p) => sum + p.revenue, 0))
+                }
+              ]}
             />
           </div>
         )}
@@ -375,94 +449,172 @@ export default function ReportsPage() {
         {/* Branch-Specific Report */}
         {selectedBranchId && branchReportData && (
           <div className="mb-8">
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Branch Report: {branchReportData.branch.Name}
-              </h2>
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+              {/* Header Section */}
+              <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 px-6 py-6 text-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold mb-1">
+                      {branchReportData.branch.Name}
+                    </h2>
+                    <p className="text-indigo-100 text-sm">
+                      <span aria-hidden="true">{branchReportData.branch.IsHeadquarter ? '🏢' : '📍'}</span>
+                      {' '}{branchReportData.branch.IsHeadquarter ? 'Headquarters' : 'Branch Location'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                      branchReportData.branch.Status === 'active' 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-gray-500 text-white'
+                    }`}>
+                      {branchReportData.branch.Status.toUpperCase()}
+                    </div>
+                  </div>
+                </div>
+              </div>
               
               {/* Branch Info */}
-              <div className="mb-6 p-4 bg-gray-50 rounded-md">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Address</p>
-                    <p className="text-gray-900">{branchReportData.branch.Address}</p>
+              <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex items-start space-x-2">
+                    <span className="text-gray-400" aria-hidden="true">📍</span>
+                    <div>
+                      <p className="text-xs font-medium text-gray-500">Address</p>
+                      <p className="text-sm text-gray-900">{branchReportData.branch.Address}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Phone</p>
-                    <p className="text-gray-900">{branchReportData.branch.Phone}</p>
+                  <div className="flex items-start space-x-2">
+                    <span className="text-gray-400" aria-hidden="true">📞</span>
+                    <div>
+                      <p className="text-xs font-medium text-gray-500">Phone</p>
+                      <p className="text-sm text-gray-900">{branchReportData.branch.Phone}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Status</p>
-                    <p className="text-gray-900 capitalize">{branchReportData.branch.Status}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Type</p>
-                    <p className="text-gray-900">
-                      {branchReportData.branch.IsHeadquarter ? 'Headquarters' : 'Branch'}
-                    </p>
+                  <div className="flex items-start space-x-2">
+                    <span className="text-gray-400" aria-hidden="true">🆔</span>
+                    <div>
+                      <p className="text-xs font-medium text-gray-500">Branch ID</p>
+                      <p className="text-sm text-gray-900 font-mono">{branchReportData.branch.ID}</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Branch Sales Summary */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
-                  <p className="text-sm font-medium text-blue-600 mb-2">Branch Revenue</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {formatCurrency(branchReportData.branchSales.totalRevenue)}
-                  </p>
-                </div>
-                <div className="p-4 bg-green-50 border border-green-200 rounded-md">
-                  <p className="text-sm font-medium text-green-600 mb-2">Total Orders</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {branchReportData.branchSales.totalOrders.toLocaleString()}
-                  </p>
-                </div>
-                <div className="p-4 bg-orange-50 border border-orange-200 rounded-md">
-                  <p className="text-sm font-medium text-orange-600 mb-2">Average Order</p>
-                  <p className="text-2xl font-bold text-orange-600">
-                    {branchReportData.branchSales.totalOrders > 0
-                      ? formatCurrency(
-                          Math.round(
-                            branchReportData.branchSales.totalRevenue /
-                              branchReportData.branchSales.totalOrders
+              <div className="p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Sales Performance</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="p-5 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-medium text-blue-700">Total Revenue</p>
+                      <span className="text-2xl" aria-hidden="true">💰</span>
+                    </div>
+                    <p className="text-3xl font-bold text-blue-600">
+                      {formatCurrency(branchReportData.branchSales.totalRevenue)}
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1">Branch contribution</p>
+                  </div>
+                  <div className="p-5 bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-medium text-green-700">Total Orders</p>
+                      <span className="text-2xl" aria-hidden="true">📦</span>
+                    </div>
+                    <p className="text-3xl font-bold text-green-600">
+                      {branchReportData.branchSales.totalOrders.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-green-600 mt-1">Orders processed</p>
+                  </div>
+                  <div className="p-5 bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-medium text-orange-700">Avg Order Value</p>
+                      <span className="text-2xl" aria-hidden="true">💳</span>
+                    </div>
+                    <p className="text-3xl font-bold text-orange-600">
+                      {branchReportData.branchSales.totalOrders > 0
+                        ? formatCurrency(
+                            Math.round(
+                              branchReportData.branchSales.totalRevenue /
+                                branchReportData.branchSales.totalOrders
+                            )
                           )
-                        )
-                      : 'KSh 0'}
-                  </p>
+                        : 'KSh 0'}
+                    </p>
+                    <p className="text-xs text-orange-600 mt-1">Per order</p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Top Products */}
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Top Products by Units Sold</h3>
-                <div className="overflow-hidden border border-gray-200 rounded-md">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Product
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Units Sold
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {Object.entries(branchReportData.branchSales.topProducts).map(
-                        ([product, units], idx) => (
-                          <tr key={idx}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {product}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {units.toLocaleString()}
-                            </td>
-                          </tr>
-                        )
-                      )}
-                    </tbody>
-                  </table>
+                {/* Top Products */}
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <span className="mr-2" aria-hidden="true">🏆</span>
+                    Top Products by Units Sold
+                  </h3>
+                  <div className="overflow-hidden border border-gray-200 rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Rank
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Product Name
+                          </th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Units Sold
+                          </th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Percentage
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {(() => {
+                          const totalUnits = Object.values(branchReportData.branchSales.topProducts).reduce((a, b) => a + b, 0);
+                          return Object.entries(branchReportData.branchSales.topProducts)
+                            .sort(([, a], [, b]) => b - a)
+                            .map(([product, units], idx) => {
+                              const percentage = totalUnits > 0 ? (units / totalUnits) * 100 : 0;
+                              return (
+                                <tr key={product} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${
+                                    idx === 0 ? 'bg-yellow-100 text-yellow-800' :
+                                    idx === 1 ? 'bg-gray-100 text-gray-800' :
+                                    idx === 2 ? 'bg-orange-100 text-orange-800' :
+                                    'bg-blue-50 text-blue-800'
+                                  } font-semibold`}>
+                                    {idx + 1}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm font-medium text-gray-900">{product}</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right">
+                                  <div className="text-sm font-semibold text-gray-900">
+                                    {units.toLocaleString()}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right">
+                                  <div className="flex items-center justify-end">
+                                    <div className="text-sm text-gray-600 mr-2">
+                                      {percentage.toFixed(1)}%
+                                    </div>
+                                    <div className="w-16 bg-gray-200 rounded-full h-2">
+                                      <div
+                                        className="bg-blue-600 h-2 rounded-full"
+                                        style={{ width: `${percentage}%` }}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                              );
+                            });
+                        })()}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
