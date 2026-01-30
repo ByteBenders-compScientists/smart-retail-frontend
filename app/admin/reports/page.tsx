@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Calendar, Filter } from 'lucide-react';
+import { Filter } from 'lucide-react';
 import ReportTable from '@/components/admin/ReportTable';
-import SalesChart from '@/components/admin/SalesChart';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { getSalesReport, getBranchReport } from '@/services/reportService';
+import { getBranches } from '@/services/branchService';
 import type { SalesReportResponse, BranchReportResponse } from '@/types/report';
+import type { ApiBranch } from '@/types/branch';
 
 export default function ReportsPage() {
   const { token } = useAuthContext();
@@ -19,6 +20,7 @@ export default function ReportsPage() {
   // API Data state
   const [salesData, setSalesData] = useState<SalesReportResponse | null>(null);
   const [branchReportData, setBranchReportData] = useState<BranchReportResponse | null>(null);
+  const [branches, setBranches] = useState<ApiBranch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -107,7 +109,17 @@ export default function ReportsPage() {
   // Load initial data
   useEffect(() => {
     fetchSalesReport();
-  }, [fetchSalesReport]);
+    // Load branches for dropdown
+    const loadBranches = async () => {
+      try {
+        const branchesData = await getBranches(token);
+        setBranches(branchesData);
+      } catch (err) {
+        console.error('Failed to load branches:', err);
+      }
+    };
+    loadBranches();
+  }, [fetchSalesReport, token]);
 
   // Fetch branch report when selected branch changes
   useEffect(() => {
@@ -128,11 +140,10 @@ export default function ReportsPage() {
   const getSalesByBranchData = () => {
     if (!salesData?.salesByBranch) return [];
     
-    return Object.entries(salesData.salesByBranch).map(([branchName, data], idx) => ({
+    return Object.entries(salesData.salesByBranch).map(([branchName, revenue], idx) => ({
       id: String(idx + 1),
       branch: branchName,
-      revenue: data.revenue || 0,
-      units: data.units || 0,
+      revenue: revenue,
     }));
   };
 
@@ -164,7 +175,6 @@ export default function ReportsPage() {
 
   const branchColumns = [
     { key: 'branch', label: 'Branch' },
-    { key: 'units', label: 'Units Sold' },
     { key: 'revenue', label: 'Revenue', format: formatCurrency },
   ];
 
@@ -199,7 +209,7 @@ export default function ReportsPage() {
             </div>
           )}
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {/* Date Range */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -245,6 +255,25 @@ export default function ReportsPage() {
                 </div>
               </>
             )}
+
+            {/* Branch Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Branch Filter
+              </label>
+              <select
+                value={selectedBranchId}
+                onChange={(e) => setSelectedBranchId(e.target.value)}
+                className="w-full placeholder:text-gray-500 text-gray-500 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">All Branches</option>
+                {branches.map((branch) => (
+                  <option key={branch.ID} value={branch.ID}>
+                    {branch.Name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Report Type */}
             <div>
@@ -315,6 +344,103 @@ export default function ReportsPage() {
               data={salesByProductReport}
               onExport={handleExport}
             />
+          </div>
+        )}
+
+        {/* Branch-Specific Report */}
+        {selectedBranchId && branchReportData && (
+          <div className="mb-8">
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Branch Report: {branchReportData.branch.Name}
+              </h2>
+              
+              {/* Branch Info */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-md">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Address</p>
+                    <p className="text-gray-900">{branchReportData.branch.Address}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Phone</p>
+                    <p className="text-gray-900">{branchReportData.branch.Phone}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Status</p>
+                    <p className="text-gray-900 capitalize">{branchReportData.branch.Status}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Type</p>
+                    <p className="text-gray-900">
+                      {branchReportData.branch.IsHeadquarter ? 'Headquarters' : 'Branch'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Branch Sales Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
+                  <p className="text-sm font-medium text-blue-600 mb-2">Branch Revenue</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {formatCurrency(branchReportData.branchSales.totalRevenue)}
+                  </p>
+                </div>
+                <div className="p-4 bg-green-50 border border-green-200 rounded-md">
+                  <p className="text-sm font-medium text-green-600 mb-2">Total Orders</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {branchReportData.branchSales.totalOrders.toLocaleString()}
+                  </p>
+                </div>
+                <div className="p-4 bg-orange-50 border border-orange-200 rounded-md">
+                  <p className="text-sm font-medium text-orange-600 mb-2">Average Order</p>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {branchReportData.branchSales.totalOrders > 0
+                      ? formatCurrency(
+                          Math.round(
+                            branchReportData.branchSales.totalRevenue /
+                              branchReportData.branchSales.totalOrders
+                          )
+                        )
+                      : 'KSh 0'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Top Products */}
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Top Products by Units Sold</h3>
+                <div className="overflow-hidden border border-gray-200 rounded-md">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Product
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Units Sold
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {Object.entries(branchReportData.branchSales.topProducts).map(
+                        ([product, units], idx) => (
+                          <tr key={idx}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {product}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {units.toLocaleString()}
+                            </td>
+                          </tr>
+                        )
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

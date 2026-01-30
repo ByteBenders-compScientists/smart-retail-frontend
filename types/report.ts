@@ -14,12 +14,6 @@ export interface BrandSales {
   units: number;
 }
 
-/** Sales data by branch */
-export interface BranchSales {
-  revenue?: number;
-  units?: number;
-}
-
 /** GET /api/v1/admin/reports/sales */
 export interface SalesReportResponse {
   filters: {
@@ -29,19 +23,13 @@ export interface SalesReportResponse {
     startDate: string;
   };
   grandTotal: number;
-  salesByBranch: Record<string, BranchSales>;
+  salesByBranch: Record<string, number>; // Branch name -> total revenue
   salesByBrand: Record<string, BrandSales>;
-}
-
-/** Top products data in branch report */
-export interface TopProduct {
-  revenue?: number;
-  units?: number;
 }
 
 /** Branch sales data */
 export interface BranchSalesData {
-  topProducts: Record<string, TopProduct>;
+  topProducts: Record<string, number>; // Product name -> units sold
   totalOrders: number;
   totalRevenue: number;
 }
