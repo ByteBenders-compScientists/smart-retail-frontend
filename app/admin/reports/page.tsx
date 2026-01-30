@@ -384,16 +384,19 @@ export default function ReportsPage() {
                     <p className="text-xs text-gray-500 mt-1">Active Locations</p>
                   </div>
                   <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                    <p className="text-sm font-medium text-gray-600 mb-2">Total Products</p>
+                    <p className="text-sm font-medium text-gray-600 mb-2">Total Brands</p>
                     <p className="text-3xl font-bold text-green-600">
                       {Object.keys(salesData?.salesByBrand || {}).length}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">Product Lines</p>
+                    <p className="text-xs text-gray-500 mt-1">Product Brands</p>
                   </div>
                   <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                     <p className="text-sm font-medium text-gray-600 mb-2">Top Product Units</p>
                     <p className="text-3xl font-bold text-orange-600">
-                      {Math.max(...Object.values(salesData?.salesByBrand || {}).map(b => b.units))}
+                      {(() => {
+                        const units = Object.values(salesData?.salesByBrand || {}).map(b => b.units);
+                        return units.length > 0 ? Math.max(...units) : 0;
+                      })()}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">Best Seller</p>
                   </div>
@@ -424,7 +427,7 @@ export default function ReportsPage() {
         {(reportType === 'all' || reportType === 'product') && (
           <div className="mb-8">
             <ReportTable
-              title="Sales by Product (Brand)"
+              title="Sales by Brand"
               columns={productColumns}
               data={salesByProductReport}
               onExport={handleExport}
@@ -455,7 +458,8 @@ export default function ReportsPage() {
                       {branchReportData.branch.Name}
                     </h2>
                     <p className="text-indigo-100 text-sm">
-                      {branchReportData.branch.IsHeadquarter ? '🏢 Headquarters' : '📍 Branch Location'}
+                      <span aria-hidden="true">{branchReportData.branch.IsHeadquarter ? '🏢' : '📍'}</span>
+                      {' '}{branchReportData.branch.IsHeadquarter ? 'Headquarters' : 'Branch Location'}
                     </p>
                   </div>
                   <div className="text-right">
@@ -474,21 +478,21 @@ export default function ReportsPage() {
               <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-start space-x-2">
-                    <span className="text-gray-400">📍</span>
+                    <span className="text-gray-400" aria-hidden="true">📍</span>
                     <div>
                       <p className="text-xs font-medium text-gray-500">Address</p>
                       <p className="text-sm text-gray-900">{branchReportData.branch.Address}</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-2">
-                    <span className="text-gray-400">📞</span>
+                    <span className="text-gray-400" aria-hidden="true">📞</span>
                     <div>
                       <p className="text-xs font-medium text-gray-500">Phone</p>
                       <p className="text-sm text-gray-900">{branchReportData.branch.Phone}</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-2">
-                    <span className="text-gray-400">🆔</span>
+                    <span className="text-gray-400" aria-hidden="true">🆔</span>
                     <div>
                       <p className="text-xs font-medium text-gray-500">Branch ID</p>
                       <p className="text-sm text-gray-900 font-mono">{branchReportData.branch.ID}</p>
@@ -504,7 +508,7 @@ export default function ReportsPage() {
                   <div className="p-5 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-sm font-medium text-blue-700">Total Revenue</p>
-                      <span className="text-2xl">💰</span>
+                      <span className="text-2xl" aria-hidden="true">💰</span>
                     </div>
                     <p className="text-3xl font-bold text-blue-600">
                       {formatCurrency(branchReportData.branchSales.totalRevenue)}
@@ -514,7 +518,7 @@ export default function ReportsPage() {
                   <div className="p-5 bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-sm font-medium text-green-700">Total Orders</p>
-                      <span className="text-2xl">📦</span>
+                      <span className="text-2xl" aria-hidden="true">📦</span>
                     </div>
                     <p className="text-3xl font-bold text-green-600">
                       {branchReportData.branchSales.totalOrders.toLocaleString()}
@@ -524,7 +528,7 @@ export default function ReportsPage() {
                   <div className="p-5 bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-sm font-medium text-orange-700">Avg Order Value</p>
-                      <span className="text-2xl">💳</span>
+                      <span className="text-2xl" aria-hidden="true">💳</span>
                     </div>
                     <p className="text-3xl font-bold text-orange-600">
                       {branchReportData.branchSales.totalOrders > 0
@@ -543,7 +547,7 @@ export default function ReportsPage() {
                 {/* Top Products */}
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    <span className="mr-2">🏆</span>
+                    <span className="mr-2" aria-hidden="true">🏆</span>
                     Top Products by Units Sold
                   </h3>
                   <div className="overflow-hidden border border-gray-200 rounded-lg">
@@ -565,13 +569,14 @@ export default function ReportsPage() {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {Object.entries(branchReportData.branchSales.topProducts)
-                          .sort(([, a], [, b]) => b - a)
-                          .map(([product, units], idx) => {
-                            const totalUnits = Object.values(branchReportData.branchSales.topProducts).reduce((a, b) => a + b, 0);
-                            const percentage = totalUnits > 0 ? (units / totalUnits) * 100 : 0;
-                            return (
-                              <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                        {(() => {
+                          const totalUnits = Object.values(branchReportData.branchSales.topProducts).reduce((a, b) => a + b, 0);
+                          return Object.entries(branchReportData.branchSales.topProducts)
+                            .sort(([, a], [, b]) => b - a)
+                            .map(([product, units], idx) => {
+                              const percentage = totalUnits > 0 ? (units / totalUnits) * 100 : 0;
+                              return (
+                                <tr key={product} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                   <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${
                                     idx === 0 ? 'bg-yellow-100 text-yellow-800' :
@@ -604,8 +609,9 @@ export default function ReportsPage() {
                                   </div>
                                 </td>
                               </tr>
-                            );
-                          })}
+                              );
+                            });
+                        })()}
                       </tbody>
                     </table>
                   </div>

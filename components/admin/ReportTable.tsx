@@ -41,7 +41,7 @@ export default function ReportTable({
             {showExport && (
               <button
                 onClick={onExport}
-                className="flex bg-blue-600 hover:bg-blue-700 items-center space-x-2 px-4 py-2 text-white rounded-md transition-colors shadow-sm"
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm"
               >
                 <Download className="h-4 w-4" />
                 <span className="text-sm font-medium">Export</span>
@@ -74,7 +74,7 @@ export default function ReportTable({
                   className="px-6 py-12 text-center text-gray-500"
                 >
                   <div className="flex flex-col items-center justify-center">
-                    <span className="text-4xl mb-2">📊</span>
+                    <span className="text-4xl mb-2" aria-hidden="true">📊</span>
                     <p className="font-medium">No data available</p>
                     <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
                   </div>
@@ -114,8 +114,8 @@ export default function ReportTable({
             </p>
             {showSummary && summaryData.length > 0 && (
               <div className="flex items-center space-x-4">
-                {summaryData.map((item, idx) => (
-                  <div key={idx} className="text-sm">
+                {summaryData.map((item) => (
+                  <div key={item.label} className="text-sm">
                     <span className="text-gray-600">{item.label}: </span>
                     <span className="font-semibold text-gray-900">{item.value}</span>
                   </div>
