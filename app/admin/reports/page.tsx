@@ -306,22 +306,47 @@ export default function ReportsPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <p className="text-sm font-medium text-gray-600 mb-2">Total Revenue</p>
-            <p className="text-3xl font-bold text-blue-600">{formatCurrency(totalRevenue)}</p>
+        {isLoading && !salesData ? (
+          <div className="bg-white border border-gray-200 rounded-lg p-12 mb-8 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading report data...</p>
+            </div>
           </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <p className="text-sm font-medium text-gray-600 mb-2">Total Orders</p>
-            <p className="text-3xl font-bold text-green-600">{totalOrders.toLocaleString()}</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <p className="text-sm font-medium text-gray-600 mb-2">Total Revenue</p>
+              <p className="text-3xl font-bold text-blue-600">{formatCurrency(totalRevenue)}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {selectedBranchId ? 'Branch Revenue' : 'All Branches'}
+              </p>
+            </div>
+            {selectedBranchId && branchReportData ? (
+              <>
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <p className="text-sm font-medium text-gray-600 mb-2">Total Orders</p>
+                  <p className="text-3xl font-bold text-green-600">{totalOrders.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500 mt-1">Branch Orders</p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <p className="text-sm font-medium text-gray-600 mb-2">Average Order</p>
+                  <p className="text-3xl font-bold text-orange-600">
+                    {totalOrders > 0 ? formatCurrency(Math.round(totalRevenue / totalOrders)) : 'KSh 0'}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Per Order Value</p>
+                </div>
+              </>
+            ) : (
+              <div className="md:col-span-2 bg-white border border-gray-200 rounded-lg p-6 flex items-center justify-center">
+                <div className="text-center text-gray-500">
+                  <p className="font-medium mb-1">Select a branch to view detailed order metrics</p>
+                  <p className="text-sm">Order count and average order value are available per branch</p>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <p className="text-sm font-medium text-gray-600 mb-2">Average Order</p>
-            <p className="text-3xl font-bold text-orange-600">
-              {totalOrders > 0 ? formatCurrency(Math.round(totalRevenue / totalOrders)) : 'KSh 0'}
-            </p>
-          </div>
-        </div>
+        )}
 
         {/* Sales by Branch Table */}
         {(reportType === 'all' || reportType === 'branch') && (
